@@ -1,0 +1,482 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Property-axil-slave | 冰蒂斯のformula</title><meta name="author" content="冰蒂斯"><meta name="copyright" content="冰蒂斯"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="1. formal property verify an AXI-lite peripheral1.1 作者建言(X)  在该篇文章中，学习 AXI BUS 到 AXI-lite bus  —— a version of AXI  that supports neither bursts, nor locking, nor transaction ID’s, nor varying quality">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Property-axil-slave">
+<meta property="og:url" content="http://example.com/2023/11/18/Property-slave/index.html">
+<meta property="og:site_name" content="冰蒂斯のformula">
+<meta property="og:description" content="1. formal property verify an AXI-lite peripheral1.1 作者建言(X)  在该篇文章中，学习 AXI BUS 到 AXI-lite bus  —— a version of AXI  that supports neither bursts, nor locking, nor transaction ID’s, nor varying quality">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/chainsaw_power01.jpg">
+<meta property="article:published_time" content="2023-11-18T15:05:49.000Z">
+<meta property="article:modified_time" content="2023-11-28T09:09:46.491Z">
+<meta property="article:author" content="冰蒂斯">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/chainsaw_power01.jpg"><link rel="shortcut icon" href="/img/bloodborn_lib.png"><link rel="canonical" href="http://example.com/2023/11/18/Property-slave/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Property-axil-slave',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-11-28 17:09:46'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.0.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/head.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">19</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/reze.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="冰蒂斯のformula"><span class="site-name">冰蒂斯のformula</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Property-axil-slave</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-11-18T15:05:49.000Z" title="发表于 2023-11-18 23:05:49">2023-11-18</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-11-28T09:09:46.491Z" title="更新于 2023-11-28 17:09:46">2023-11-28</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Property-axil-slave"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="1-formal-property-verify-an-AXI-lite-peripheral"><a href="#1-formal-property-verify-an-AXI-lite-peripheral" class="headerlink" title="1. formal property verify an AXI-lite peripheral"></a>1. <a target="_blank" rel="noopener" href="https://zipcpu.com/formal/2018/12/28/axilite.html">formal property verify an AXI-lite peripheral</a></h1><h2 id="1-1-作者建言-X"><a href="#1-1-作者建言-X" class="headerlink" title="1.1 作者建言(X)"></a>1.1 作者建言(X)</h2><img src="https://zipcpu.com/img/easyaxil/axi-signals.png" alt="img" style="zoom: 33%;" />
+
+<p>在该篇文章中，学习 AXI BUS 到 AXI-lite bus  —— a version of AXI  that supports neither bursts, nor locking, nor transaction ID’s, nor varying quality of service guarantees.Most beginners who have tried to work with the AXI-lite protocol used by either the Zynq or Soc+FPGA chips haven’t found it to be the simple protocol they were hoping for.（乐，这里作者说很多使用 Zynq 和Soc FPGA的同学打算使用 AXI-lite来进行初次学习，但是发现 AXI-lite protocol 并没有他们想像的那么简单）</p>
+<p>It has certainly been anything but simple for me.</p>
+<h2 id="1-2-AXI-lite-简单介绍-X"><a href="#1-2-AXI-lite-简单介绍-X" class="headerlink" title="1.2  AXI-lite 简单介绍(X)"></a>1.2  AXI-lite 简单介绍(X)</h2><p>如果你事先对 handshake ， skidbuffer 有过了解或者相关章节的仔细阅读。这一段阅读的价值不大，作者在这章节中假设阅读者没有实现了解过相关知识(我看了一下是 2018 年的blogs，发出的时间很早)，在之前作者并未普及相关知识，所以如果有了解可以不看。</p>
+<p>还是先对 AXI 的五个通道，以及和 AXI-lite 之间做一个区分：</p>
+<p> AXI has five such channels. For writing values to the bus, there’s the write address channel, the write data channel, and the write response channel. For reading values from the bus, there’s a read address-request channel and a read response channel.</p>
+<img src="https://zipcpu.com/img/bus-axi-channels.svg" alt="img" style="zoom:67%;" />
+
+<p>Perhaps the biggest differences are that：</p>
+<ul>
+<li>with AXI-lite, any read and write request can only reference one piece of data at a time</li>
+<li>there is <strong>no need</strong> to provide <strong>unique identifiers</strong> for each transaction. </li>
+<li>AXI-lite has no requirement to implement locking, quality of service, or any cache protocols.</li>
+</ul>
+<p>虽然相比完整 AXI ， AXI-lite 少了很多功能，但是对其实现还是有很多困难。</p>
+<h3 id="1-2-1-AXI-lite-read"><a href="#1-2-1-AXI-lite-read" class="headerlink" title="1.2.1 AXI-lite read"></a>1.2.1 AXI-lite read</h3><p>首先介绍一个axi-lite read transaction ：</p>
+<p>看这个图，AR channel 的 slave 握手的信号都是 valid before ready，每次握手后 ready 信号拉低而不是一直保持 High。R channel 通道master 的 RREADY一直保持 high signal ，所以 Rvalid 拉高一次就完成握手传输。</p>
+<p>​														<strong>Fig 2. Several AXI-lite read transactions</strong></p>
+<p><img src="https://zipcpu.com/img/xilinx-axil/axil-xilinx-read.svg" alt="img"></p>
+<h4 id="formal-verification-properties"><a href="#formal-verification-properties" class="headerlink" title="&#x3D;&#x3D;formal verification properties&#x3D;&#x3D;"></a>&#x3D;&#x3D;formal verification properties&#x3D;&#x3D;</h4><p><strong>1-4 性质</strong>都是 valid before ready 类型针对 AR R channel 要求的 property：</p>
+<ol>
+<li><p>Once <code>S_AXI_ARVALID</code> is raised, it must remain high until <code>S_AXI_ARVALID &amp;&amp; S_AXI_ARREADY</code>。**(常见性质)**</p>
+</li>
+<li><p>While <code>S_AXI_ARVALID</code> is true but the slave hasn’t yet raised <code>S_AXI_ARREADY</code>, <code>S_AXI_ARADDR</code> must remain constant.<strong>(常见性质)</strong></p>
+</li>
+<li><p>Similarly, once the <code>S_AXI_RVALID</code> reply acknowledgment request is raised, it must also remain high until <code>S_AXI_RVALID &amp;&amp; S_AXI_RREADY</code> are both true.<strong>(常见性质)</strong></p>
+</li>
+<li><p>As with the read address channel, while <code>S_AXI_RVALID</code> is true and the master has yet to raise <code>S_AXI_RREADY</code>, both <code>S_AXI_RDATA</code> and <code>S_AXI_RRESP</code> must remain constant.<strong>(常见性质)</strong></p>
+</li>
+<li><p>For every request with <code>S_AXI_ARVALID &amp;&amp; S_AXI_ARREADY</code>, there must follow one clock period sometime later where <code>S_AXI_RVALID &amp;&amp; S_AXI_RREADY</code>.</p>
+<p>Unlike <a target="_blank" rel="noopener" href="https://zipcpu.com/zipcpu/2017/11/07/wb-formal.html">our development of the WB properties</a>, there is no bus abort capability in the <a target="_blank" rel="noopener" href="https://zipcpu.com/doc/axi-spec.pdf">AXI bus protocol</a>. As a result, following a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Bus_error">bus error</a>, you’ll still need to deal with any remaining acknowledgments.</p>
+<p><strong><font color="red">这个性质不常见。可以发现在上面的图中，由 AXI slave 发起的信号(不论是 ARREADY 还是 RREADY ) 在成功握手之后都要 low one beat ，而不是进行连续的传输。这里的解释是：需要留时间解决可能出现的传输错误</font></strong></p>
+</li>
+<li><p>Just to keep things moving, we’ll also want to insist that after some implementation defined minimum number of clock ticks waiting the slave must raise <code>S_AXI_ARREADY</code>.</p>
+<p><strong><font color="red">ready可以等待 valid 到来之后再拉高，这是允许的。也允许 slave ready 信号在一定的时钟周期后自动拉高 ready 信号</font></strong></p>
+</li>
+<li><p>The same applies to the reverse link: the master should not be allowed to hold <code>S_AXI_RREADY</code> low indefinitely while <code>S_AXI_RVALID</code> is high.</p>
+<p><strong><font color="red">7是6的反面，slave的ar_ready不允许无限期拉低，那么 master 的 r_ready也不允许永远low</font></strong></p>
+</li>
+</ol>
+<h3 id="1-2-2-AXI-lite-Write"><a href="#1-2-2-AXI-lite-Write" class="headerlink" title="1.2.2  AXI-lite Write"></a>1.2.2  AXI-lite Write</h3><h4 id="1-存在的问题"><a href="#1-存在的问题" class="headerlink" title="1. 存在的问题"></a>1. 存在的问题</h4><p>The write address channel is designed to allow a single “burst” request to indicate a desire to write to multiple addresses, closely followed by a burst of data on the write data channel.</p>
+<p><font color="red">注意这里的用词，  <code>closely followed by a burst of data</code> 。在手册中说明 write transaction 中 write address 和 write data 之间没有什么依赖关系，但是这里给了 closely followed 这样的字眼，值得注意。</font></p>
+<p>在继续看，作者对这一行为进行了进一步解释：</p>
+<p>AXI-lite, unlike the full AXI protocol, has no burst write support. <strong><font color="red">Every address request must be accompanied by a single piece of associated write data.</font></strong> To make matters worse, the two channels are only <strong><font color="red">loosely synchronized</font></strong>, forcing the slave to synchronize to them internally.</p>
+<p><strong>Fig. 3 shows a basic set of write transactions illustrating this problem.</strong></p>
+<p><img src="https://zipcpu.com/img/xilinx-axil/axil-xilinx-write.svg" alt="img"></p>
+<h4 id="2-bounds-边界"><a href="#2-bounds-边界" class="headerlink" title="2.  &#x3D;&#x3D;bounds 边界&#x3D;&#x3D;"></a>2.  &#x3D;&#x3D;bounds 边界&#x3D;&#x3D;</h4><ol>
+<li><p>The <strong><font color="red">first transaction</font></strong> is as simple as one might like. Both write address and write data requests show up <strong>at the same time</strong>. On the following clock the respective <code>*WREADY</code> signals are set, and then the acknowledgment takes place on the third clock where <code>*BVALID</code> is set.</p>
+<p>注意这个流程中各个信号的时序，<code>*WREADY</code> 信号保持低 until recognize <code>*WVALID</code> 信号。这种行为并不是协议要求的(据我阅读协议”依赖”所知：协议建议尽可能一直拉高 <code>*WREADY</code> 信号以免花费两个时钟周期处理一次<code>transfer</code>)。此类行为严重影响速度；</p>
+<p>且在这个例子中 <code>S_AXI_BREADY</code> 信号一直保持为高，在有些例子中并不是这样。</p>
+</li>
+<li><p>The <strong><font color="red">second transaction</font></strong> illustrates one of the bounds on the write channels: Xilinx’s rules allow the write address valid signal to <strong>show up no more than two clocks before the write data</strong>.（yysy，这个要求我还没看到过）</p>
+<p>在这个例子中， <code>*WREADY</code> 并不是等待相应的 <code>*WVALID</code> 信号来临后拉高，反而是 AW W 都<code>valid</code> 后拉高。</p>
+</li>
+<li><p>The <strong><font color="red">third transaction</font></strong> illustrates the other bound: the write data channel may arrive up to <strong>one clock before the write address channel</strong>. As with the previous example, this slave holds the various <code>*WREADY</code> lines low until both are present. The acknowledgment then takes place on the next clock.</p>
+</li>
+<li><p>The <strong><font color="red">final three transactions</font></strong> are part of a speed test measuring how fast this core can handle subsequent transactions. This wait period limits the speed of <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/wb2axip/blob/master/bench/formal/xlnxdemo.v">this slave core</a> to <strong>one transaction every two clocks</strong>. </p>
+<p>可以很明显的看见写最快的，也需要两个时钟周期进行一次transaction 或者 transfer。</p>
+</li>
+</ol>
+<p>If the Lord wills, I’d like to also present <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/wb2axip/blob/master/rtl/demoaxi.v">another AXI-slave core</a> with much better throughput performance, but that will need to remain for another day.  （**<font color="orange">后续可以看看这个怎么实现的，不过这个时候我不想看，不舒服</font>**）</p>
+<h4 id="3-Couples-of-fomeal-properties"><a href="#3-Couples-of-fomeal-properties" class="headerlink" title="3.  &#x3D;&#x3D;Couples of fomeal properties&#x3D;&#x3D;"></a>3.  &#x3D;&#x3D;Couples of fomeal properties&#x3D;&#x3D;</h4><p>开始就是经典握手依赖<code> VALID BEFORE READY</code>： </p>
+<ol>
+<li>Each of the <code>*VALID</code> signals should remain high until their respective <code>*READY</code> signal is also high. This applies to both the write address channel, the write data channel, as well as the acknowledgment channel.</li>
+<li>The data associated with each channel should be constant from when the <code>*VALID</code> signal is set until both <code>*VALID</code> and <code>*READY</code> are set together.</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">**&lt;font color=&quot;red&quot;&gt;xilinx 强制的两个限制关系，手册说完全无关，看来实际应用中有限制和要求&lt;/font&gt;**</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><p>We also discussed the two Xilinx imposed limits above as well.</p>
+<p>– The write data channel may become active no more than one clock before the write address channel, and（写数据最多超 写地址一周期）</p>
+<p>– The write address channel may become active no more than two clocks before the write data channel.（写地址最多超写数据两周期）</p>
+</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">**&lt;font color=&quot;red&quot;&gt;这个在手册里提及过，虽然 B 通道的依赖关系只需要 `WVLIAD` 和 `WREADY`，但是一般使用中要求 B依赖 ： `AWVLIAD`、`AWREADY`、`WVALID`、`WREADY`。&lt;/font&gt;**</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>Finally, there should be no more than one acknowledgment per write request. Well, it’s a bit more complex than that. Both write address and write data channels will need to be checked, so that there is never any write acknowledgment until a request has previously been received on both of those two channels.</li>
+</ol>
+<h2 id="1-3-Using-a-Formal-Property-Set-√"><a href="#1-3-Using-a-Formal-Property-Set-√" class="headerlink" title="1.3  Using a Formal Property Set ( √)"></a>1.3  Using a Formal Property Set ( √)</h2><p>关于使用这方面我将在后续进行学习和使用，在该段时间我们先来看作者进行的覆盖行为检验出来的官方代码的错误。</p>
+<h3 id="1-3-1-官方错误"><a href="#1-3-1-官方错误" class="headerlink" title="1.3.1 官方错误"></a>1.3.1 官方错误</h3><h4 id="1-write-√"><a href="#1-write-√" class="headerlink" title="1. write(√)"></a>1. write(√)</h4><p><strong>Fig 3. Some example write transactions</strong></p>
+<img src="https://zipcpu.com/img/xilinx-axil/axil-xilinx-write.svg" alt="img" style="zoom: 67%;" />
+
+<p><strong>Fig. 4. Xilinx’s demonstration code drops a write acknowledgment</strong></p>
+<img src="https://zipcpu.com/img/xilinx-axil/axil-xilinx-write-fail.svg" alt="img" style="zoom:67%;" />
+
+<p>The image differs, however, from our previous write example in Fig 3 above simply because the <code>S_AXI_BREADY</code> signal is not held high. 可以清楚的观察到在图片4中，并没有像图片3中一样一直拉高 <code>BREADY</code>信号。所以 <code>BVLAID</code> 并没有立即被确认。结果在下一周期三个通道同时有效完成握手行为！</p>
+<p>As a result, the <code>S_AXI_BVALID</code> transaction is not immediately acknowledged until <code>S_AXI_BREADY</code> has been valid for a whole clock. By that time, however, the logic within <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/wb2axip/blob/master/bench/formal/xlnxdemo.v">the core</a> has lost the reality that there is a second transaction that needs to be acknowledged as well. Hence, once <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/wb2axip/blob/master/bench/formal/xlnxdemo.v">the core</a> drops the <code>S_AXI_BVALID</code> line, a transaction has been lost. 让我们看看 <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/wb2axip/blob/master/bench/formal/xlnxdemo.v">the core</a> 使用了什么样错误的设计导致此类错误。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*574-605*/</span></span><br><span class="line"><span class="comment">// Implement write response logic generation</span></span><br><span class="line"><span class="comment">// The write response and response valid signals are asserted by the slave</span></span><br><span class="line"><span class="comment">// when axi_wready, S_AXI_WVALID, axi_wready and S_AXI_WVALID are asserted.</span></span><br><span class="line"><span class="comment">// This marks the acceptance of address and indicates the status of</span></span><br><span class="line"><span class="comment">// write transaction.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">* 上面的信息表示：只要收到两个信号的同时 handshake ，就可以申请 assert response transaction</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p>这下为什么会发生这样的行为逻辑就一目了然。逻辑中确认一次 wreite transaction 的要求还有上依次的 bvalid 属于无效状态。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @( <span class="keyword">posedge</span> S_AXI_ACLK )</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">  <span class="keyword">if</span> ( S_AXI_ARESETN == <span class="number">1&#x27;b0</span> )</span><br><span class="line">    <span class="keyword">begin</span></span><br><span class="line">      axi_bvalid  &lt;= <span class="number">0</span>;</span><br><span class="line">      axi_bresp   &lt;= <span class="number">2&#x27;b0</span>;</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    <span class="keyword">begin</span></span><br><span class="line">      <span class="keyword">if</span> (axi_awready &amp;&amp; S_AXI_AWVALID &amp;&amp; ~axi_bvalid &amp;&amp; axi_wready &amp;&amp; S_AXI_WVALID)</span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">          <span class="comment">// indicates a valid write response is available</span></span><br><span class="line">          axi_bvalid &lt;= <span class="number">1&#x27;b1</span>;</span><br><span class="line">          axi_bresp  &lt;= <span class="number">2&#x27;b0</span>; <span class="comment">// &#x27;OKAY&#x27; response</span></span><br><span class="line">        <span class="keyword">end</span>                   <span class="comment">// work error responses in future</span></span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">          <span class="keyword">if</span> (S_AXI_BREADY &amp;&amp; axi_bvalid)</span><br><span class="line">            <span class="comment">//check if bready is asserted while bvalid is high)</span></span><br><span class="line">            <span class="comment">//(there is a possibility that bready is always asserted high)</span></span><br><span class="line">            <span class="keyword">begin</span></span><br><span class="line">              axi_bvalid &lt;= <span class="number">1&#x27;b0</span>;</span><br><span class="line">            <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="2-read-√"><a href="#2-read-√" class="headerlink" title="2. read(√)"></a>2. read(√)</h4><p><strong>Fig. 5. Xilinx’s demonstration code drops a read acknowledgment</strong></p>
+<p><img src="https://zipcpu.com/img/xilinx-axil/axil-xilinx-read-fail.svg" alt="img"></p>
+<p>If we assume that <code>S_AXI_RREADY</code> is always high, just like we did with <code>S_AXI_BREADY</code>, this failure also vanishes。**<font color="red">也是因为没有一直拉高 <code>READY</code>信号导致的错误。我寻思document一直建议拉高是不是就是这个麻烦的原因。</font>**</p>
+<p>With a little looking, and a quick trace capability, it doesn’t take long to chase down the bug. You can see the problem below as it exists for the <code>S_AXI_ARREADY</code> signal. Basically, the core allowed this signal to go high before it knew that the <code>S_AXI_RVALID</code> signal would be acknowledged.</p>
+<p>查看源代码哪里出错了，首先是样板重置，我们不进行讨论，忽略这一部分。我们把注意集中到 axi_arready 信号的处理上。<font color="red">在行动初期，我们发现了漏洞。特别是，无论结果通道是否停止并且没有地方保存结果，都将设置axi_arready。</font></p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">     <span class="keyword">if</span> (~axi_arready &amp;&amp; S_AXI_ARVALID)</span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">          <span class="comment">// indicates that the slave has acceped the valid read address</span></span><br><span class="line">          axi_arready &lt;= <span class="number">1&#x27;b1</span>;</span><br><span class="line">          <span class="comment">// Read address latching</span></span><br><span class="line">          axi_araddr  &lt;= S_AXI_ARADDR;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">          axi_arready &lt;= <span class="number">1&#x27;b0</span>;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>(~axi_arready &amp;&amp; S_AXI_ARVALID)</code>：<ul>
+<li>condition：<code>ARVALID</code> 信号为真，且 ar_ready信号 false 的时候发生；</li>
+<li>behaviour：在下一周期拉高 <code>READY</code> 信号,表示已经接收到来自master的信号，对地址数据进行 <code>latch</code> 行为；一旦拉高后下一周期必定拉低；</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>怎么整改呢？</p>
+</blockquote>
+<p><img src="https://zipcpu.com/img/xilinx-axil/axil-xilinx-read-fail.svg" alt="img"></p>
+<ul>
+<li><code>(!S_AXI_RVALID || S_AXI_RREADY)</code>：注意这里的 <code>RVALID</code> 由 slave 发出；<ul>
+<li><code>S_AXI_RVALID  == 0</code> ： 只要没有准备好的 read data ，那么可以进行握手读取，读取新的数据地址；</li>
+<li><code>S_AXI_RVALID  == 1</code>：有等待读出的数据；<ul>
+<li><code>S_AXI_RREADY == 1</code> ：Master 可以握手，next clock 传输数据的同时更新read data，行！</li>
+<li><code>S_AXI_RREADY == 0</code> ：Master 不可以握手，你的上一次的数据还没有读出，不能读入新的 read address ;</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">      <span class="keyword">if</span> (!axi_arready &amp;&amp; S_AXI_ARVALID &amp;&amp; (!S_AXI_RVALID || S_AXI_RREADY))</span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">          <span class="comment">// indicates that the slave has acceped the valid read address</span></span><br><span class="line">          axi_arready &lt;= <span class="number">1&#x27;b1</span>;</span><br><span class="line">          <span class="comment">// Read address latching</span></span><br><span class="line">          axi_araddr  &lt;= S_AXI_ARADDR;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">begin</span></span><br><span class="line">          axi_arready &lt;= <span class="number">1&#x27;b0</span>;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="1-3-2-Cover-暂待"><a href="#1-3-2-Cover-暂待" class="headerlink" title="1.3.2 Cover (暂待)"></a>1.3.2 Cover (暂待)</h3><p>代码见：<a target="_blank" rel="noopener" href="https://github.com/ZipCPU/wb2axip/tree/master/bench/formal">https://github.com/ZipCPU/wb2axip/tree/master/bench/formal</a></p>
+<h1 id="2-AXI-lite-Property"><a href="#2-AXI-lite-Property" class="headerlink" title="2.  AXI-lite Property"></a>2.  AXI-lite Property</h1><p>在之前讨论了AXI LIte需要遵守的许多property，我们需要现在assertion 确保这些断言正确。</p>
+<h2 id="2-1-basic-property"><a href="#2-1-basic-property" class="headerlink" title="2.1 basic property"></a>2.1 basic property</h2><ol>
+<li>Requests must wait to be accepted。<strong>经典的valid before ready 握手流程；</strong></li>
+<li>Acknowledgments can only follow requests。**<font color="red">不理解</font>**</li>
+<li>All responses must return in a known number of cycles。**<font color="red">所有响应信号都必须在最小周期内解决</font>**</li>
+<li>Waiting requests should not be held waiting more than some maximum delay.  <strong>valid before ready 的request信号必须要在最大周期内解决；</strong></li>
+</ol>
+<h2 id="2-2-configuration-parameters"><a href="#2-2-configuration-parameters" class="headerlink" title="2.2 configuration parameters"></a>2.2 configuration parameters</h2><p><em>&#x3D;&#x3D;width of the bus.&#x3D;&#x3D;</em></p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> faxil_slave #(</span><br><span class="line">	<span class="comment">// The width of the data bus</span></span><br><span class="line">	<span class="keyword">parameter</span> C_AXI_DATA_WIDTH	= <span class="number">32</span>,<span class="comment">// Fixed, width of the AXI R&amp;W data</span></span><br></pre></td></tr></table></figure>
+
+<p>&#x3D;&#x3D;<em>width of the address.</em>&#x3D;&#x3D;</p>
+<p>even though we are going to ignore the sub-word address bits for now. (There’s only one requirement of them, associated with the <code>S_AXI_WSTRB</code> signal, and I haven’t coded that up yet.)。这句话理解很简单：高位用来word寻址，低位用来当 WSTRB。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">parameter</span>  C_AXI_ADDR_WIDTH	= <span class="number">28</span>,<span class="comment">// AXI Address width (log wordsize)</span></span><br></pre></td></tr></table></figure>
+
+<p>&#x3D;&#x3D;<em>if cache</em>&#x3D;&#x3D;</p>
+<p>These flags indicate whether the transaction is to be bufferable, non-bufferable, cachable, non-cachable, or more.</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">parameter</span> [<span class="number">0</span>:<span class="number">0</span>]	F_OPT_HAS_CACHE = <span class="number">1&#x27;b0</span>,</span><br></pre></td></tr></table></figure>
+
+<p>&#x3D;&#x3D;<em>no read</em>&#x3D;&#x3D;</p>
+<p>assume the read channel is idle and remove the read channel cover check.</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">parameter</span> [<span class="number">0</span>:<span class="number">0</span>]	F_OPT_NO_READS  = <span class="number">1&#x27;b0</span>,</span><br></pre></td></tr></table></figure>
+
+<p>&#x3D;&#x3D;<em>no write</em>&#x3D;&#x3D;</p>
+<p>assume the write channel is idle, and remove the write channel cover check. </p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">parameter</span> [<span class="number">0</span>:<span class="number">0</span>]	F_OPT_NO_WRITES = <span class="number">1&#x27;b0</span>,</span><br></pre></td></tr></table></figure>
+
+<p>&#x3D;&#x3D;<em>If response</em>&#x3D;&#x3D;</p>
+<p>AXI定义了三种不同的错误，如果slave没有错误，可以屏蔽这个信号</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">parameter</span> [<span class="number">0</span>:<span class="number">0</span>]	F_OPT_BRESP = <span class="number">1&#x27;b1</span>,</span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//  The same is true for F_OPT_RRESP for the read channel</span></span><br><span class="line"><span class="keyword">parameter</span> [<span class="number">0</span>:<span class="number">0</span>]	F_OPT_RRESP = <span class="number">1&#x27;b1</span>,</span><br></pre></td></tr></table></figure>
+
+<p><em>&#x3D;&#x3D;F_OPT_ASSUME_RESET—-reset time&#x3D;&#x3D;</em></p>
+<p>需要长的重置时钟周期</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">parameter</span> [<span class="number">0</span>:<span class="number">0</span>]	F_OPT_ASSUME_RESET = <span class="number">1&#x27;b1</span>,</span><br></pre></td></tr></table></figure>
+
+<p>&#x3D;&#x3D;<em>F_LGDEPTH</em>&#x3D;&#x3D;</p>
+<p>暂时简单理解为一个 flag_count_depth.</p>
+<p>In order to insure that there is only one acknowledgment for every request received, we’ll need to count requests and acknowledgments and compare our signals to these counters. <code>F_LGDEPTH</code> specifies the number of bits to be used for those counters.</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">parameter</span>				F_LGDEPTH	= <span class="number">4</span>,</span><br></pre></td></tr></table></figure>
+
+<p>&#x3D;&#x3D;F_AXI_MAXWAIT—-MAX cyles for stalle&#x3D;&#x3D;*</p>
+<p>（接收处理问题，非发起者问题）</p>
+<p>We’re going to insist that no transaction remains stalled for more than some maximum number of clock cycles, <code>F_AXI_MAXWAIT</code>. This also keeps the design and traces moving during our proof. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">parameter	[(F_LGDEPTH-1):0]	F_AXI_MAXWAIT  = 12,</span><br></pre></td></tr></table></figure>
+
+<p>&#x3D;&#x3D;F_AXI_MAXDELAY—-MAX cyles delay&#x3D;&#x3D;*</p>
+<p>（接收处理问题，返回给发起者）</p>
+<p>the result will be returned to the <a target="_blank" rel="noopener" href="https://zipcpu.com/doc/axi-spec.pdf">AXI bus</a> master within a given number of clock cycles. The number of cycles to wait is very implementation dependent, so it needs to be a configuration parameter.</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">parameter</span>	[(F_LGDEPTH-<span class="number">1</span>):<span class="number">0</span>]	F_AXI_DELAY  = <span class="number">12</span>,</span><br></pre></td></tr></table></figure>
+
+
+
+<p>Let me add one other note on these two clock durations: the shorter <code>F_AXI_MAXWAIT</code> and <code>F_AXI_MAXDELAY</code> are, the faster your proof will complete. 那肯定的阿， <code>F_AXI_MAXWAIT</code> 要求了最大的拉高周期，要求 stall 必须要在该时间段内被处理， <code>F_AXI_MAXWAIT</code>要求 slave 必须在该时间段内返回给 master 数值。肯定周期数越小，时钟越快。</p>
+<h4 id="1-2-parameter-with-signal"><a href="#1-2-parameter-with-signal" class="headerlink" title="1.2 parameter with signal"></a>1.2 parameter with signal</h4><h5 id="input"><a href="#input" class="headerlink" title="input"></a>input</h5><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>			i_clk,	<span class="comment">// System clock</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>			i_axi_reset_n,</span><br><span class="line"></span><br><span class="line"><span class="comment">// AXI write address channel signals</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>						i_axi_awready,<span class="comment">//Slave is ready to accept</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>	[AW-<span class="number">1</span>:<span class="number">0</span>]	i_axi_awaddr,	<span class="comment">// Write address</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>	[<span class="number">3</span>:<span class="number">0</span>]			i_axi_awcache,	<span class="comment">// Write Cache type</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>	[<span class="number">2</span>:<span class="number">0</span>]			i_axi_awprot,	<span class="comment">// Write Protection type</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>						i_axi_awvalid,	<span class="comment">// Write address valid</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// AXI write data channel signals</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>						i_axi_wready,  <span class="comment">// Write data ready</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>	[DW-<span class="number">1</span>:<span class="number">0</span>]	i_axi_wdata,	<span class="comment">// Write data</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>	[DW/<span class="number">8</span>-<span class="number">1</span>:<span class="number">0</span>]i_axi_wstrb,	<span class="comment">// Write strobes</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>						i_axi_wvalid,	<span class="comment">// Write valid</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// AXI write response channel signals</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>	[<span class="number">1</span>:<span class="number">0</span>]		i_axi_bresp,	<span class="comment">// Write response</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>					i_axi_bvalid,  <span class="comment">// Write reponse valid</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>					i_axi_bready,  <span class="comment">// Response ready</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// AXI read address channel signals</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>					i_axi_arready,	<span class="comment">// Read address ready</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>	[AW-<span class="number">1</span>:<span class="number">0</span>]i_axi_araddr,	<span class="comment">// Read address</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>	[<span class="number">3</span>:<span class="number">0</span>]		i_axi_arcache,	<span class="comment">// Read Cache type</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>	[<span class="number">2</span>:<span class="number">0</span>]		i_axi_arprot,	<span class="comment">// Read Protection type</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>					i_axi_arvalid,	<span class="comment">// Read address valid</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// AXI read data channel signals</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>	[<span class="number">1</span>:<span class="number">0</span>]		i_axi_rresp,   <span class="comment">// Read response</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>					i_axi_rvalid,  <span class="comment">// Read reponse valid</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>	[DW-<span class="number">1</span>:<span class="number">0</span>]i_axi_rdata,   <span class="comment">// Read data</span></span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>					i_axi_rready,  <span class="comment">// Read Response ready</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="output"><a href="#output" class="headerlink" title="output"></a>output</h5><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">	<span class="comment">// 由于上文可知 F_LGDEPTH 是一个 flag_count_depth ，这个输出应该是记录的 counter</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">output</span>	<span class="keyword">reg</span>	[(F_LGDEPTH-<span class="number">1</span>):<span class="number">0</span>]	f_axi_rd_outstanding,</span><br><span class="line">	<span class="keyword">output</span>	<span class="keyword">reg</span>	[(F_LGDEPTH-<span class="number">1</span>):<span class="number">0</span>]	f_axi_wr_outstanding,</span><br><span class="line">	<span class="keyword">output</span>	<span class="keyword">reg</span>	[(F_LGDEPTH-<span class="number">1</span>):<span class="number">0</span>]	f_axi_awr_outstanding</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="handshake-signal"><a href="#handshake-signal" class="headerlink" title="handshake signal"></a>handshake signal</h5><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// wire	w_fifo_full;</span></span><br><span class="line"><span class="keyword">wire</span>	axi_rd_ack, axi_wr_ack, axi_ard_req, axi_awr_req, axi_wr_req;</span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="keyword">assign</span>	axi_ard_req = (i_axi_arvalid)&amp;&amp;(i_axi_arready);</span><br><span class="line"><span class="keyword">assign</span>	axi_awr_req = (i_axi_awvalid)&amp;&amp;(i_axi_awready);</span><br><span class="line"><span class="keyword">assign</span>	axi_wr_req  = (i_axi_wvalid )&amp;&amp;(i_axi_wready);</span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="keyword">assign</span>	axi_rd_ack = (i_axi_rvalid)&amp;&amp;(i_axi_rready);</span><br><span class="line"><span class="keyword">assign</span>	axi_wr_ack = (i_axi_bvalid)&amp;&amp;(i_axi_bready);</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-Reset-Properties"><a href="#2-Reset-Properties" class="headerlink" title="2 Reset Properties"></a>2 Reset Properties</h3><h4 id="2-1-f-past-valid"><a href="#2-1-f-past-valid" class="headerlink" title="2.1 f_past_valid"></a>2.1 f_past_valid</h4><p>For this, we can use <code>f_past_valid</code>. This is simply a piece of helper logic that I often create. It’s just something that is clear on the first cycle, set on every other cycle, and only used during formal verification.仅仅用来拉高一个时钟周期。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">reg</span>	f_past_valid;</span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span>	f_past_valid = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> ACLK)</span><br><span class="line">	f_past_valid &lt;= <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>我先说明一下 assume 和 assert 的区别。assume 是约束激励，看环境的激励信号是否和预设的一致。assert约束的是行为逻辑，看 system behavior 是否和预想的一致。</p>
+<ul>
+<li>如果 <code>(F_OPT_ASSUME_RESET)</code>：那么外部的激励，和假设的行为保持一致；</li>
+<li>如果没，进行行为约束。怎么感觉两者没有区别；</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">generate</span> <span class="keyword">if</span> (F_OPT_ASSUME_RESET)</span><br><span class="line"></span><br><span class="line"> <span class="keyword">begin</span> : ASSUME_INIITAL_RESET            <span class="comment">//开始时候的  激励  信号复位行为</span></span><br><span class="line">	<span class="keyword">always</span> @(*)</span><br><span class="line">	<span class="keyword">if</span> (!f_past_valid)</span><br><span class="line">     <span class="keyword">assume</span>(!i_axi_reset_n);            <span class="comment">//激励约束，假设外部激励reset只维持 one cycle</span></span><br><span class="line">   </span><br><span class="line"><span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">begin</span> : ASSERT_INIITAL_RESET    <span class="comment">//开始时候  行为  信号复位行为</span></span><br><span class="line">	<span class="keyword">always</span> @(*)</span><br><span class="line">	<span class="keyword">if</span> (!f_past_valid)</span><br><span class="line">     <span class="keyword">assert</span>(!i_axi_reset_n);             <span class="comment">// 行为约束</span></span><br><span class="line">   </span><br><span class="line"><span class="keyword">end</span> <span class="keyword">endgenerate</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="2-2-保持时长"><a href="#2-2-保持时长" class="headerlink" title="2.2 保持时长"></a>2.2 保持时长</h4><p><font color="red">Xilinx 要求 AXI reset 的复位最小要保持 16 时钟周期？why？</font></p>
+<p>开始 <code>i_axi_reset_n == 1</code>，高位复位 ，f_reset_length拉低并开始计时。这样哪怕 <code>i_axi_reset_n</code> 之拉高复位了一个时钟周期，<code>f_reset_length</code>也会保持低位16周期。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">initial</span>	f_reset_length = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line"><span class="keyword">if</span> (i_axi_reset_n)</span><br><span class="line">	<span class="comment">// If ever the reset is released, &quot;reset&quot; the reset-length</span></span><br><span class="line">	<span class="comment">// counter back to zero.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	f_reset_length &lt;= <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (!(&amp;f_reset_length))</span><br><span class="line">	<span class="comment">// Otherwise, just quietly increment the counter until we get</span></span><br><span class="line">	<span class="comment">// to 15</span></span><br><span class="line">	f_reset_length &lt;= f_reset_length + <span class="number">1&#x27;b1</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="2-3-查看复位"><a href="#2-3-查看复位" class="headerlink" title="2.3 查看复位"></a>2.3 查看复位</h4><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">generate</span> <span class="keyword">if</span> (F_OPT_ASSUME_RESET)</span><br><span class="line"><span class="keyword">begin</span> : ASSUME_RESET</span><br><span class="line">	<span class="comment">// ...</span></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">begin</span> : ASSERT_RESET</span><br><span class="line">   <span class="comment">/* </span></span><br><span class="line"><span class="comment">   *  1.(f_past_valid)==1 ： 上周期不是第一次复位，已经进行了复位；</span></span><br><span class="line"><span class="comment">   *  2. !$past(i_axi_reset_n) == 1 : 输入的复位信号 0 ，上周期--没有--再次复位； </span></span><br><span class="line"><span class="comment">   *  3. !$past(&amp;f_reset_length) ==1： 复位--没有--结束，此时至少是最后的复位周期</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">	<span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	<span class="keyword">if</span> ((f_past_valid)&amp;&amp;(!<span class="built_in">$past</span>(i_axi_reset_n))&amp;&amp;(!<span class="built_in">$past</span>(&amp;f_reset_length)))</span><br><span class="line">		<span class="keyword">assert</span>(!i_axi_reset_n);</span><br><span class="line"></span><br><span class="line">   <span class="comment">/*</span></span><br><span class="line"><span class="comment">   *  计数中，信号全部保持低位</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">	<span class="keyword">always</span> @(*)</span><br><span class="line">	<span class="keyword">if</span> ((f_reset_length &gt; <span class="number">0</span>)&amp;&amp;(f_reset_length &lt; <span class="number">4&#x27;hf</span>))</span><br><span class="line">		<span class="keyword">assert</span>(!i_axi_reset_n);</span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">endgenerate</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="2-4-复位其他信号"><a href="#2-4-复位其他信号" class="headerlink" title="2.4 复位其他信号"></a>2.4 复位其他信号</h4><ul>
+<li>复位  <code>i_axi_Xvalid</code> 请求信号；</li>
+<li>response 清好清除：</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @(*)</span><br><span class="line">	<span class="keyword">if</span> (i_axi_bvalid)</span><br><span class="line">		`SLAVE_ASSERT(i_axi_bresp != <span class="number">2&#x27;b01</span>); <span class="comment">// Exclusive access not allowed</span></span><br><span class="line">	<span class="keyword">always</span> @(*)</span><br><span class="line">	<span class="keyword">if</span> (i_axi_rvalid)</span><br><span class="line">		`SLAVE_ASSERT(i_axi_rresp != <span class="number">2&#x27;b01</span>); <span class="comment">// Exclusive access not allowed</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-Stablity-Properties（经典VBR问题）"><a href="#3-Stablity-Properties（经典VBR问题）" class="headerlink" title="3. Stablity Properties（经典VBR问题）"></a>3. Stablity Properties（经典VBR问题）</h3><p>The rule we discussed above was that the signals that are coupled with any transaction should be held constant as long as the transaction remains outstanding &#x3D;&#x3D;(i.e. valid but not ready).&#x3D;&#x3D;</p>
+<p>没有被及时处理就要保持 outstanding 状态。</p>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th><strong>关键字</strong></th>
+<th><strong>描述</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>a |-&gt; b</td>
+<td>如果a成立，那么在当前时刻b必须成立</td>
+<td>assertion成立的条件：条件满足且结论为真,条件不满足（空成功）</td>
+</tr>
+<tr>
+<td>a |&#x3D;&gt; b</td>
+<td>如果a成立，那么在下一时刻b必须成立</td>
+<td>assertion成立的条件：条件满足且结论为真,条件不满足（空成功）</td>
+</tr>
+</tbody></table>
+</blockquote>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">*   当前周期： valid before ready</span></span><br><span class="line"><span class="comment">*   下一周期： valid 继续有效 ， i_data保持相应不变</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">	<span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">		<span class="keyword">disable</span> <span class="keyword">iff</span> (!i_axi_reset_n)</span><br><span class="line">		(i_axi_awvalid &amp;&amp; !i_axi_awready)</span><br><span class="line">		|=&gt; i_axi_awvalid &amp;&amp; (<span class="built_in">$stable</span>(i_axi_awaddr)));</span><br><span class="line"></span><br><span class="line">	<span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">		<span class="keyword">disable</span> <span class="keyword">iff</span> (!i_axi_reset_n)</span><br><span class="line">		(i_axi_wvalid &amp;&amp; !i_axi_wready)</span><br><span class="line">		|=&gt; i_axi_wvalid &amp;&amp; <span class="built_in">$stable</span>(i_axi_wdata)</span><br><span class="line">			&amp;&amp; <span class="built_in">$stable</span>(i_axi_wstrb) );</span><br><span class="line"></span><br><span class="line">	<span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">		<span class="keyword">disable</span> <span class="keyword">iff</span> (!i_axi_reset_n)</span><br><span class="line">		(i_axi_bvalid &amp;&amp; !i_axi_bready)</span><br><span class="line">		|=&gt; i_axi_bvalid &amp;&amp; <span class="built_in">$stable</span>(i_axi_bresp));</span><br><span class="line"></span><br><span class="line">	<span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>In order to use the immediate assertions supported by the free version of <a target="_blank" rel="noopener" href="https://symbiyosys.readthedocs.io/en/latest">SymbiYosys</a>, we’ll need to put a little more work into this.（就是为了把 SBY的断言加进去） </p>
+<p>First, we want to avoid the first clock period and any clock period following a reset. This is to make sure our properties deal with valid data. 不想要任何跟随在rest信号的时钟周期。这里说明一下是怎么实现的。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">   <span class="keyword">if</span> ((f_past_valid)&amp;&amp;(<span class="built_in">$past</span>(i_axi_reset_n)))</span><br><span class="line">     <span class="keyword">begin</span></span><br></pre></td></tr></table></figure>
+
+<p>WA channel 举例：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">	<span class="comment">// Write address channel</span></span><br><span class="line">	<span class="comment">// valid before ready :($past(i_axi_awvalid))&amp;&amp;(!$past(i_axi_awready))</span></span><br><span class="line">	<span class="keyword">if</span> ((f_past_valid)&amp;&amp;(<span class="built_in">$past</span>(i_axi_awvalid))&amp;&amp;(!<span class="built_in">$past</span>(i_axi_awready)))</span><br><span class="line">	<span class="keyword">begin</span></span><br><span class="line">		`SLAVE_ASSUME(i_axi_awvalid);</span><br><span class="line">		`SLAVE_ASSUME(<span class="built_in">$stable</span>(i_axi_awaddr));</span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// Apply to all other incoming channels</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>重要思想：</p>
+<blockquote>
+<p>The important part to remember is that we will &#x3D;&#x3D;<em>assume</em>&#x3D;&#x3D; properties of the input, and <em>&#x3D;&#x3D;assert&#x3D;&#x3D;</em> properties of our local state and any outputs. Hence, in this case we’ll <em>&#x3D;&#x3D;assume&#x3D;&#x3D;</em> the properties of the write address channel, the write data channel, and the read address channel, but <em>&#x3D;&#x3D;assert&#x3D;&#x3D;</em> properties of the two acknowledgment channels.</p>
+</blockquote>
+<h3 id="4-Maximum-Delay"><a href="#4-Maximum-Delay" class="headerlink" title="4.Maximum Delay"></a>4.Maximum Delay</h3><p>no channel should remain stalled for more than a finite number of clock cycles. </p>
+<blockquote>
+<p>Q : how to define a stall signal </p>
+<p>A :   <em>VALID</em> &amp;&amp; !<em>READY</em></p>
+</blockquote>
+<p>想要限制 stall signal 最多维持多少个时钟信号，我们首先要 count the number of stalls. </p>
+<p>首先我们要设置用于计算 count的register：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">generate</span> <span class="keyword">if</span> (F_AXI_MAXWAIT &gt; <span class="number">0</span>)</span><br><span class="line"><span class="keyword">begin</span> : CHECK_STALL_COUNT</span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">   <span class="keyword">reg</span>	[(F_LGDEPTH-<span class="number">1</span>):<span class="number">0</span>]			f_axi_awstall,<span class="comment">// AW 拉高周期  slave</span></span><br><span class="line">                             f_axi_wstall, <span class="comment">// W  拉高周期  slave</span></span><br><span class="line">                             f_axi_arstall,<span class="comment">// AR 拉高周期  slave</span></span><br><span class="line">                             f_axi_bstall, <span class="comment">// B  拉高周期  master</span></span><br><span class="line">                             f_axi_rstall; <span class="comment">// r  拉高周期  master</span></span><br></pre></td></tr></table></figure>
+
+<p>我们将会使用如何计算 AW  channel 举例：</p>
+<h4 id="4-0-What-is-outstanding"><a href="#4-0-What-is-outstanding" class="headerlink" title="4.0 What is outstanding"></a>4.0 What is outstanding</h4><p>outstanding是对地址而言的，为了理解outstanding，我们需要理解AXI协议中的关键思想：地址和数据分离。</p>
+<p>所以，outstanding就是发出去的地址数量，未处理的地址可以先存放在AXI总线的缓存里，等完成一次传输事物之后，无需再握手传输地址，即可立即进行下一次的数据传输，所以outstanding本质上是为了实现数据传输的pipeline。</p>
+<h4 id="4-1-Reset-stall"><a href="#4-1-Reset-stall" class="headerlink" title="4.1 Reset_stall"></a>4.1 Reset_stall</h4><ul>
+<li><code>!i_axi_reset_n == 1</code> ：复位信号使得 stall low，reset；</li>
+<li><code>!i_axi_awvalid == 1</code> ：上一级不请求，reset；</li>
+<li><code>i_axi_awready == 1</code>  ：下一级已经准备好，reset ；</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">initial</span>	f_axi_awstall = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line"><span class="keyword">if</span> ((!i_axi_reset_n)||(!i_axi_awvalid)||(i_axi_awready))</span><br><span class="line">	f_axi_awstall &lt;= <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-2-Clear-stall"><a href="#4-2-Clear-stall" class="headerlink" title="4.2 Clear_stall"></a>4.2 Clear_stall</h4><p>&#x3D;&#x3D;不是很理解这个行为,等待后续解决&#x3D;&#x3D;</p>
+<ul>
+<li><code>i_axi_awvalid == 1</code> ： AW 通道上级数据 <code>VALID</code> ；</li>
+<li><code>!i_axi_wvalid == 1</code>： W   通道上级数据  <code>!VALID</code> ；</li>
+<li><code>(f_axi_awr_outstanding &gt;= f_axi_wr_outstanding) == 1</code> ：  <code>AW</code> 通道<code>OUTSTANDING</code>次数大于等于 <code>W</code> 通道的<code>OUTSTANDING</code>次数，这个时候 <code>AW</code> 通道的 <code>VALID_DATA</code> 已经来了， W 通道的有效数据还没有来；<ul>
+<li>这说明： AW 在等待  W <code>VALID</code>，这个时候不计算 stall ？？？</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> ((f_axi_awr_outstanding &gt;= f_axi_wr_outstanding)</span><br><span class="line">	&amp;&amp;(i_axi_awvalid &amp;&amp; !i_axi_wvalid))</span><br><span class="line">	<span class="comment">// If we are waiting for the write channel to be valid</span></span><br><span class="line">	<span class="comment">// then don&#x27;t count stalls</span></span><br><span class="line">	f_axi_awstall &lt;= <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-3-Add-stall"><a href="#4-3-Add-stall" class="headerlink" title="4.3 Add stall"></a>4.3 Add stall</h4><p>we only want to accumulate stalls on this request channel <strong><font color="orange">if the back end isn’t stalled. </font></strong></p>
+<ul>
+<li>​</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> ((!i_axi_bvalid)||(i_axi_bready))</span><br><span class="line">	f_axi_awstall &lt;= f_axi_awstall + <span class="number">1&#x27;b1</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-4-Assert-NUM-stall"><a href="#4-4-Assert-NUM-stall" class="headerlink" title="4.4 Assert NUM_stall"></a>4.4 Assert NUM_stall</h4><p>使用 assert 立即保证行为不出错；</p>
+<p>因为 <code>S_AXI_AWREADY</code> 是输出信号，对于输入信号使用 <code>assumptions</code> 。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @(*)</span><br><span class="line">		`SLAVE_ASSERT(f_axi_awstall &lt; F_AXI_MAXWAIT);</span><br><span class="line">	<span class="comment">// The other channel stall counts are very similar</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">	<span class="keyword">always</span> @(*)</span><br><span class="line">		`SLAVE_ASSUME(f_axi_rstall &lt; F_AXI_MAXWAIT);</span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">endgenerate</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h3 id="5-Xilinx-Constraints"><a href="#5-Xilinx-Constraints" class="headerlink" title="5. Xilinx Constraints"></a>5. Xilinx Constraints</h3><p><strong><font color="red">xilinx 手册说无关但是自己干的事：</font></strong></p>
+<ol>
+<li>The address line will never be more than two clocks ahead of the write data channel, and</li>
+<li>The write data channel will never be more than one clock ahead of the address channel.</li>
+</ol>
+<h4 id="5-1-AW-2b-W-Rules"><a href="#5-1-AW-2b-W-Rules" class="headerlink" title="5.1 AW_2b_W Rules"></a>5.1 AW_2b_W Rules</h4><p>First, if there was a write address request two clocks ago, and no intervening write data request, then we want to assume a write data request now.</p>
+<p>Ok, not quite, that’s missing a key detail: it is possible that the write address request of two clocks ago <em>followed</em> a write data request. That means we’ll also have to check that the number of write data and write address requests were equal two clocks ago, or there had been more write address requests.</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">冰蒂斯</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2023/11/18/Property-slave/">http://example.com/2023/11/18/Property-slave/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">冰蒂斯のformula</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="/img/chainsaw_power01.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/11/23/5-1-2-basic-master/" title="5-1 basic_master(下)"><img class="cover" src="/img/chainsaw_makima04.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">5-1 basic_master(下)</div></div></a></div><div class="next-post pull-right"><a href="/2023/11/18/Property-master/" title="Property_axil-master"><img class="cover" src="/img/chainsaw_makima04.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Property_axil-master</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">冰蒂斯</div><div class="author-info__description">螺旋上升的人生,也是多线程的人生</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">19</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-formal-property-verify-an-AXI-lite-peripheral"><span class="toc-number">1.</span> <span class="toc-text">1. formal property verify an AXI-lite peripheral</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E4%BD%9C%E8%80%85%E5%BB%BA%E8%A8%80-X"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 作者建言(X)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-AXI-lite-%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D-X"><span class="toc-number">1.2.</span> <span class="toc-text">1.2  AXI-lite 简单介绍(X)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-1-AXI-lite-read"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.2.1 AXI-lite read</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#formal-verification-properties"><span class="toc-number">1.2.1.1.</span> <span class="toc-text">&#x3D;&#x3D;formal verification properties&#x3D;&#x3D;</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-2-AXI-lite-Write"><span class="toc-number">1.2.2.</span> <span class="toc-text">1.2.2  AXI-lite Write</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%AD%98%E5%9C%A8%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">1. 存在的问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-bounds-%E8%BE%B9%E7%95%8C"><span class="toc-number">1.2.2.2.</span> <span class="toc-text">2.  &#x3D;&#x3D;bounds 边界&#x3D;&#x3D;</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-Couples-of-fomeal-properties"><span class="toc-number">1.2.2.3.</span> <span class="toc-text">3.  &#x3D;&#x3D;Couples of fomeal properties&#x3D;&#x3D;</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-Using-a-Formal-Property-Set-%E2%88%9A"><span class="toc-number">1.3.</span> <span class="toc-text">1.3  Using a Formal Property Set ( √)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-1-%E5%AE%98%E6%96%B9%E9%94%99%E8%AF%AF"><span class="toc-number">1.3.1.</span> <span class="toc-text">1.3.1 官方错误</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-write-%E2%88%9A"><span class="toc-number">1.3.1.1.</span> <span class="toc-text">1. write(√)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-read-%E2%88%9A"><span class="toc-number">1.3.1.2.</span> <span class="toc-text">2. read(√)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-2-Cover-%E6%9A%82%E5%BE%85"><span class="toc-number">1.3.2.</span> <span class="toc-text">1.3.2 Cover (暂待)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-AXI-lite-Property"><span class="toc-number">2.</span> <span class="toc-text">2.  AXI-lite Property</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-basic-property"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 basic property</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-configuration-parameters"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 configuration parameters</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-parameter-with-signal"><span class="toc-number">2.2.0.1.</span> <span class="toc-text">1.2 parameter with signal</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#input"><span class="toc-number">2.2.0.1.1.</span> <span class="toc-text">input</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#output"><span class="toc-number">2.2.0.1.2.</span> <span class="toc-text">output</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#handshake-signal"><span class="toc-number">2.2.0.1.3.</span> <span class="toc-text">handshake signal</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Reset-Properties"><span class="toc-number">2.2.1.</span> <span class="toc-text">2 Reset Properties</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-f-past-valid"><span class="toc-number">2.2.1.1.</span> <span class="toc-text">2.1 f_past_valid</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-%E4%BF%9D%E6%8C%81%E6%97%B6%E9%95%BF"><span class="toc-number">2.2.1.2.</span> <span class="toc-text">2.2 保持时长</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-%E6%9F%A5%E7%9C%8B%E5%A4%8D%E4%BD%8D"><span class="toc-number">2.2.1.3.</span> <span class="toc-text">2.3 查看复位</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-%E5%A4%8D%E4%BD%8D%E5%85%B6%E4%BB%96%E4%BF%A1%E5%8F%B7"><span class="toc-number">2.2.1.4.</span> <span class="toc-text">2.4 复位其他信号</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Stablity-Properties%EF%BC%88%E7%BB%8F%E5%85%B8VBR%E9%97%AE%E9%A2%98%EF%BC%89"><span class="toc-number">2.2.2.</span> <span class="toc-text">3. Stablity Properties（经典VBR问题）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Maximum-Delay"><span class="toc-number">2.2.3.</span> <span class="toc-text">4.Maximum Delay</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-0-What-is-outstanding"><span class="toc-number">2.2.3.1.</span> <span class="toc-text">4.0 What is outstanding</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-Reset-stall"><span class="toc-number">2.2.3.2.</span> <span class="toc-text">4.1 Reset_stall</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-Clear-stall"><span class="toc-number">2.2.3.3.</span> <span class="toc-text">4.2 Clear_stall</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-Add-stall"><span class="toc-number">2.2.3.4.</span> <span class="toc-text">4.3 Add stall</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-4-Assert-NUM-stall"><span class="toc-number">2.2.3.5.</span> <span class="toc-text">4.4 Assert NUM_stall</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-Xilinx-Constraints"><span class="toc-number">2.2.4.</span> <span class="toc-text">5. Xilinx Constraints</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-AW-2b-W-Rules"><span class="toc-number">2.2.4.1.</span> <span class="toc-text">5.1 AW_2b_W Rules</span></a></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/01/06/how2blog/" title="how2blog"><img src="/img/reze.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="how2blog"/></a><div class="content"><a class="title" href="/2024/01/06/how2blog/" title="how2blog">how2blog</a><time datetime="2024-01-06T14:34:23.000Z" title="发表于 2024-01-06 22:34:23">2024-01-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/27/S2MM/" title="S2MM"><img src="/img/chainsaw_red.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S2MM"/></a><div class="content"><a class="title" href="/2023/12/27/S2MM/" title="S2MM">S2MM</a><time datetime="2023-12-27T05:57:36.000Z" title="发表于 2023-12-27 13:57:36">2023-12-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/24/auto2-using/" title="auto2-using"><img src="/img/chainsaw_makima04.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="auto2-using"/></a><div class="content"><a class="title" href="/2023/12/24/auto2-using/" title="auto2-using">auto2-using</a><time datetime="2023-12-24T14:17:24.000Z" title="发表于 2023-12-24 22:17:24">2023-12-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/12/auto1-introduction/" title="auto1_introduction"><img src="/img/flower.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="auto1_introduction"/></a><div class="content"><a class="title" href="/2023/12/12/auto1-introduction/" title="auto1_introduction">auto1_introduction</a><time datetime="2023-12-12T06:18:40.000Z" title="发表于 2023-12-12 14:18:40">2023-12-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/10/Verilator-NEW-LOOK/" title="Verilator-NEW-LOOK"><img src="/img/flower.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Verilator-NEW-LOOK"/></a><div class="content"><a class="title" href="/2023/12/10/Verilator-NEW-LOOK/" title="Verilator-NEW-LOOK">Verilator-NEW-LOOK</a><time datetime="2023-12-10T08:38:13.000Z" title="发表于 2023-12-10 16:38:13">2023-12-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By 冰蒂斯</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

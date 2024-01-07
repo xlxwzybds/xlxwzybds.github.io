@@ -1,0 +1,363 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>auto2-using | 冰蒂斯のformula</title><meta name="author" content="冰蒂斯"><meta name="copyright" content="冰蒂斯"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="1.前言 Purpose: Take a look at how to create some simple AutoFPGA component files that you can then use within a basic AutoFPGA design. Specifically, let’s look at how to &#x3D;&#x3D;connect wishbone&amp;#x">
+<meta property="og:type" content="article">
+<meta property="og:title" content="auto2-using">
+<meta property="og:url" content="http://example.com/2023/12/24/auto2-using/index.html">
+<meta property="og:site_name" content="冰蒂斯のformula">
+<meta property="og:description" content="1.前言 Purpose: Take a look at how to create some simple AutoFPGA component files that you can then use within a basic AutoFPGA design. Specifically, let’s look at how to &#x3D;&#x3D;connect wishbone&amp;#x">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/chainsaw_makima04.jpg">
+<meta property="article:published_time" content="2023-12-24T14:17:24.000Z">
+<meta property="article:modified_time" content="2023-12-24T14:22:36.038Z">
+<meta property="article:author" content="冰蒂斯">
+<meta property="article:tag" content="autoFPGA">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/chainsaw_makima04.jpg"><link rel="shortcut icon" href="/img/bloodborn_lib.png"><link rel="canonical" href="http://example.com/2023/12/24/auto2-using/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'auto2-using',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-12-24 22:22:36'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.0.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/head.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">19</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/reze.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="冰蒂斯のformula"><span class="site-name">冰蒂斯のformula</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">auto2-using</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-12-24T14:17:24.000Z" title="发表于 2023-12-24 22:17:24">2023-12-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-12-24T14:22:36.038Z" title="更新于 2023-12-24 22:22:36">2023-12-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/autoFPGA/">autoFPGA</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="auto2-using"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="1-前言"><a href="#1-前言" class="headerlink" title="1.前言"></a>1.前言</h1><blockquote>
+<p><strong>Purpose</strong>:</p>
+<p>Take a look at how to create some simple AutoFPGA component files that you can then use within a basic AutoFPGA design. Specifically, let’s look at how to &#x3D;&#x3D;connect wishbone&#x3D;&#x3D; components having &#x3D;&#x3D;only a single data register&#x3D;&#x3D; to an AutoFPGA project.</p>
+</blockquote>
+<p><strong>we’ll start out by taking a look at AutoFPGA’s configuration file format.</strong> </p>
+<ul>
+<li><em>Understand the basics of <strong>how to read the configuration files</strong> themselves.</em> </li>
+<li><em>Then</em> discuss briefly the two Verilog files &#x3D;&#x3D;AutoFPGA generates&#x3D;&#x3D;, <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/autofpga-demo/blob/master/auto-generated/toplevel.v">toplevel.v</a> and <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/autofpga-demo/blob/master/auto-generated/main.v">main.v</a>,</li>
+<li>*And then <strong>how the various AutoFPGA tags get place</strong>d within that structure.*</li>
+</ul>
+<p>This will then lead us to the point where we can create the AutoFPGA configuration files necessary to read and write single registers from a peripheral.</p>
+<h1 id="2-Configuration-File-Format"><a href="#2-Configuration-File-Format" class="headerlink" title="2. Configuration File Format"></a>2. Configuration File Format</h1><p>It only makes sense to pause to comment on the file structure in general.</p>
+<blockquote>
+<p><strong>Key value pairs</strong></p>
+</blockquote>
+<p>AutoFPGA configuration files consist of a series <em>key value pairs</em>. Keys start at the beginning of a line with an <code>@</code> sign and end with an <code>=</code> sign. </p>
+<p>Hence, to define the key <code>KEY</code> to have a value <code>VALUE</code>, you’d write:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@KEY=VALUE</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 关于空格的使用，不是很清楚</span></span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>Multi-line values</strong></p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@KEY=</span><br><span class="line">/* The keys value will be given</span><br><span class="line"> * by these series of lines.</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>Comments</strong></p>
+</blockquote>
+<p>Comment lines begin with either a <code>#</code> and a space, or two <code>##</code>s. </p>
+<p>使用<code>//</code>或<code>/* ... */</code>来创建将被复制到结果文件中的注释。这些注释将与VALUE一起被粘贴到目标文件中，保持其格式和内容不变。这对于在生成的文件中保留有用的注释信息非常有用。</p>
+<p><em>Other comment characters, such as <code>//</code> or <code>/* ... */</code> will create comments within the result files that the <code>VALUE</code> gets pasted into.</em> </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">This is a comment within AutoFPGA</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">#This is also a comment</span></span></span><br><span class="line">@KEY=</span><br><span class="line">/* This comment will be copy/pasted into the source file this KEY&#x27;s VALUE</span><br><span class="line"> * will be pasted into.</span><br><span class="line"> */</span><br><span class="line">// This comment will also be copy/pasted as part of AutoFPGA&#x27;s work</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p> <strong>&#x3D;&#x3D;Unordered&#x3D;&#x3D;</strong></p>
+</blockquote>
+<p>上面设置的 <em>key-value pairs</em> 是无序的，但 <em>@PREFIX</em> 是一个例外，它用于在配置文件中分隔不同的组件。它告诉AutoFPGA在处理配置文件时如何组织和分隔不同的部分。例如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@PREFIX=ComponentA</span><br><span class="line">@A_KEY=ValueForA</span><br><span class="line">@PREFIX=ComponentB</span><br><span class="line">@B_KEY=ValueForB</span><br></pre></td></tr></table></figure>
+
+<p>在这个例子中，<code>@PREFIX</code> 键用于指示组件A和组件B的开始，而 <code>@A_KEY</code> 和 <code>@B_KEY</code> 分别属于这两个组件。使用 <code>@PREFIX</code> 键可以确保配置文件中的组件被正确地识别和处理。</p>
+<blockquote>
+<p><strong>Substitution</strong></p>
+</blockquote>
+<p><code>VALUE</code>s from one <code>KEY</code> may be substituted into <code>VALUE</code>s from another, by referencing the value by its keys name, as in <code>@$(KEY)</code>. 感觉和 <em>makefile</em> 中的引用一样。</p>
+<blockquote>
+<p>&#x3D;&#x3D;<strong>Expressions</strong>&#x3D;&#x3D;</p>
+</blockquote>
+<p><code>KEY</code>s that start with <code>@$</code> instead of <code>@</code> define integer valued expressions. AutoFPGA contains a simple expression evaluator. 键值对中，如果<em>key</em>使用 <code>@$</code>来进行开头，代表这是一个数值表达式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@$BAUDCLOCKS=@$(BAUDRATE)/@$(CLKFREQHZ)</span><br></pre></td></tr></table></figure>
+
+<p>if you’ve defined </p>
+<ul>
+<li><code>BAUDRATE</code> as<code>@BAUDRATE=1000000</code>， </li>
+<li>and <code>CLKFREQHZ</code> as <code>@$CLKFREQHZ=100000000</code>， </li>
+<li>then AutoFPGA would calculate the <code>@BAUDCLOCKS</code> frequency to be 100 clocks.</li>
+</ul>
+<p>如果 <em>BAUDCLOCKS</em> 的表达形式不是数值，而是字符串，这里会自动转换。</p>
+<p><em>If <code>@$(BAUDCLOCKS)</code> is used in an string context, it will evaluate to the string <code>&quot;100&quot;</code>. (The format is adjustable via the <code>@BAUDCLOCKS.FORMAT</code> tag, but we’ll get to that later.)</em></p>
+<blockquote>
+<p>&#x3D;&#x3D;<strong>The @PREFIX key</strong>&#x3D;&#x3D;</p>
+</blockquote>
+<p>All AutoFPGA components begin with a <code>@PREFIX</code> key. This key defines both the beginning of the component’s keys within a configuration file, as well as the end of any prior component that may also be defined within the file. </p>
+<p>The <code>@PREFIX</code> tag also creates a sort of local variable namespace, since keys defined following a <code>@PREFIX</code> key are quietly prefixed in the global key structure by the <code>@PREFIX</code>.</p>
+<p><code>@PREFIX</code>标签还创建了一种局部变量命名空间，因为在<code>@PREFIX</code>键之后定义的键会在全局键结构中被<code>@PREFIX</code>悄悄地加上前缀。例如，如果您有以下配置：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@PREFIX=ModuleA</span><br><span class="line">@KEY1=Value1</span><br><span class="line">@KEY2=Value2</span><br><span class="line">@PREFIX=ModuleB</span><br><span class="line">@KEY1=Value3</span><br><span class="line">@KEY2=Value4</span><br></pre></td></tr></table></figure>
+
+<p>在内部，<em>AutoFPGA</em>可能会将这些键转换为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ModuleA_KEY1=Value1</span><br><span class="line">ModuleA_KEY2=Value2</span><br><span class="line">ModuleB_KEY1=Value3</span><br><span class="line">ModuleB_KEY2=Value4</span><br></pre></td></tr></table></figure>
+
+<p>这样，即使两个模块使用相同的键名（如<em>KEY1</em>和<em>KEY2</em>），它们也不会相互冲突，因为它们被<code>@PREFIX</code>区分开来。这允许在<em>AutoFPGA</em>的全局环境中维护清晰的组件边界和命名空间。</p>
+<h1 id="3-RTL-File-Structure"><a href="#3-RTL-File-Structure" class="headerlink" title="3. RTL File Structure"></a>3. RTL File Structure</h1><p>Understand how AutoFPGA looks at RTL (Verilog) files.</p>
+<p>A design should have the structure shown in <code>Fig 1</code>. In this structure, the AutoFPGA  generated files are marked with a <strong><font color="red">red star</font></strong>.</p>
+<img src="https://zipcpu.com/img/auto-rtl.svg" alt="AutoFPGA RTL File Structure" style="zoom:60%;" />
+
+<p>所有 <em>autoFPGA</em> 的工作只有两个：</p>
+<ul>
+<li><p>创建 <em>mian.v</em> 文件，该文件是一个 <em>bus</em> 连接文件，将 <em>BUS MASTER</em> 和外设进行连接；</p>
+</li>
+<li><p>创建顶层文件 <em>toplevel.v</em> 该顶层文件涵盖不能仿真的 <em>vendor specific components</em> ，可以仿真的 <em>vendor independents components</em> 以及 <em>BUS MASTER</em>；</p>
+</li>
+</ul>
+<h1 id="4-a-simple-ad-hoc-value"><a href="#4-a-simple-ad-hoc-value" class="headerlink" title="4. a simple ad-hoc value"></a>4. a simple ad-hoc value</h1><p>Read a constant value from our bus. The value itself is arbitrary for this example, so we’ll just set it to <code>32&#39;h20170926</code>.  The whole files is not big, let me paste it here.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># Filename: 	fixdata.txt</span></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># Project:	AutoFPGA basic peripheral demonstration project</span></span></span><br><span class="line">@PREFIX=fixdata</span><br><span class="line">@DEVID=FIXEDATA</span><br><span class="line">@NADDR=1</span><br><span class="line">@SLAVE.TYPE=SINGLE</span><br><span class="line">@SLAVE.BUS=wb</span><br><span class="line">@MAIN.INSERT=</span><br><span class="line">	//</span><br><span class="line">	// A basic peripheral serving up a fixed/constant 32-bits of data</span><br><span class="line">	//</span><br><span class="line">	assign	@$(SLAVE.PREFIX)_idata = 32&#x27;h20170926;</span><br><span class="line">@REGS.N=1</span><br><span class="line">@REGS.0= 0 R_@$(DEVID) @$(DEVID)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="4-1-PREFIX-addr"><a href="#4-1-PREFIX-addr" class="headerlink" title="4.1 PREFIX &amp; addr"></a>4.1 PREFIX &amp; addr</h2><p>The <strong>first step</strong> is to declare this item as a peripheral–as its own entity, and to give it a name that will distinguish it from other peripherals within our design. This is done via the <code>@PREFIX</code> key. The <code>@PREFIX</code> key is required for all components. It defines the beginning of the component, and ends any component definitions prior to it. </p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@PREFIX=fixdata</span><br></pre></td></tr></table></figure>
+
+<p>We may also want an <strong>all-caps</strong> name for some of the contexts this peripheral might be in. This isn’t required, like the <code>@PREFIX</code> key is, but it makes a nice illustration. This is a <strong>classic example of a key</strong> that AutoFPGA knows nothing about. <em>It will have only the meaning we give it below.</em></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@DEVID=FIXEDATA</span><br></pre></td></tr></table></figure>
+
+<p><strong>the third step</strong> is to detemnd the address.<em>If you want this peripheral to have a place on the bus, then AutoFPGA needs to know how many addresses to assign to it.</em> 这是用单个<em>register</em> 连接 <em>bus</em> 举例，所以只有<em>single address</em> 。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@NADDR=1</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="4-2-Bus-Type-Insert"><a href="#4-2-Bus-Type-Insert" class="headerlink" title="4.2 Bus &amp; Type &amp; Insert"></a>4.2 Bus &amp; Type &amp; Insert</h2><p><strong>the fourth step</strong> , which BUS we are going to use ? This particular peripheral is going to be a slave peripheral to the main wishbone bus, <code>wb</code> within our design.</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@SLAVE.BUS=wb</span><br></pre></td></tr></table></figure>
+
+<p>Once a component is declared to be a bus slave, a series of wires will be defined for it within  main.v  as referenced in Fig 2 above. although I’ll tend to reference these as <code>@$(PREFIX)_data</code>, <code>@$(PREFIX)_ack</code>, etc.</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">wire</span>	[<span class="number">31</span>:<span class="number">0</span>]	fixdata_data;</span><br><span class="line"><span class="keyword">wire</span>					fixdata_ack, fixdata_stall, fixdata_sel;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p><strong>The type of bus is signle , what does it mean ?</strong> </p>
+<blockquote>
+<p>Because our value is already fixed, it won’t take any clocks to calculate it–it’s already known. Therefore this slave is of type <code>SINGLE</code>, since it can return a result in a <code>SINGLE</code> clock cycle.</p>
+</blockquote>
+<p> <em><code>SINGLE</code> peripherals <strong>don’t</strong> need to define their wishbone acknowledgement wires, <code>@$(PREFIX)_ack</code>, or their stall lines, <code>@$(PREFIX)_stall</code>, &#x3D;&#x3D;since they never stall and the ack is true the same clock the peripheral is accessed.&#x3D;&#x3D;</em></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@SLAVE.TYPE=SINGLE</span><br></pre></td></tr></table></figure>
+
+<p>除了 <em>single</em> 还有其他类型。</p>
+<blockquote>
+<p>Other peripheral types are <code>DOUBLE</code>, <code>OTHER</code>, and <code>MEMORY</code>. <code>DOUBLE</code> peripherals require a single clock to calculate their value, yet never stall. <code>OTHER</code> and <code>MEMORY</code> peripherals are more generic wishbone peripherals–but we’ll discuss these more later.</p>
+</blockquote>
+<hr>
+<ul>
+<li>insert 暂时不清楚作用，跳过，跳过</li>
+</ul>
+<h2 id="4-3-name-peripheral"><a href="#4-3-name-peripheral" class="headerlink" title="4.3  name peripheral"></a>4.3  name peripheral</h2><blockquote>
+<p><strong>Purpose</strong>:</p>
+<p>The last step in our peripheral definition is to give a name for this peripheral to be used when accessing it via the debugging interface.</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@REGS.N=1</span><br><span class="line">@REGS.0= 0 R_@$(DEVID) @$(DEVID)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>The <strong>first</strong> of the lines below just specifies that this peripheral <strong>has only one named register</strong>. </li>
+<li>The <strong>second</strong> line says that, at an offset of zero words from the beginning of this peripheral’s address is a register named <code>R_@$(DEVID)</code> with a user name of <code>@$(DEVID)</code>.  表示从这个外设地址的开头偏移零个字的位置有一个名为R_@(DEVID)的寄存器，用户名称为@(DEVID)。这些将分别被转换为R_FIXEDATA和FIXEDATA。</li>
+</ul>
+<h1 id="5-Reading-a-Fixed-Version-number"><a href="#5-Reading-a-Fixed-Version-number" class="headerlink" title="5.  Reading a Fixed Version number"></a>5.  Reading a Fixed Version number</h1><p>Many of my designs contain an include file, <code>builddate.v</code>, that is created by a simple perl script . This <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/autofpga-demo/blob/master/rtl/builddate.v">include file</a> defines a value <code>DATESTAMP</code> containing the date when mkdatev.pl was last run.</p>
+<p>Creating a register containing this version information is almost identical to the last exercise. </p>
+<p><strong><font color="red">目前我对读取版本信息没有太大的兴趣</font></strong></p>
+<h1 id="6-Reading-access-to-an-internal-changing-register"><a href="#6-Reading-access-to-an-internal-changing-register" class="headerlink" title="6. Reading access to an internal (changing) register"></a>6. Reading access to an internal (changing) register</h1><blockquote>
+<p><strong>Purpose</strong> :</p>
+<p>Suppose we wanted to know how many clock ticks had taken place since we first initialized our design, and whether the count had (eventually) rolled over.</p>
+<p>To get this value, we’d need to initialize a register and then count clocks with it.</p>
+<p><strong>FILE NAME</strong> ：</p>
+<p>The <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/autofpga-demo/blob/master/auto-data/pwrcount.txt">pwrcount.txt</a> configuration file describes just how to build one of such a register. We’ll walk through this file below.</p>
+</blockquote>
+<h2 id="6-1-bus-declaration"><a href="#6-1-bus-declaration" class="headerlink" title="6.1 bus declaration"></a>6.1 bus declaration</h2><p><em>Bus access declaration is the same as before but with a new name, <code>pwrcount</code>.</em> Note that I didn’t use the <code>DEVID</code> this time. It’s just an example of a key you can use if it helps you, or ignore if not.</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@PREFIX=pwrcount</span><br><span class="line">@NADDR=1</span><br><span class="line">@SLAVE.TYPE=SINGLE</span><br><span class="line">@SLAVE.BUS=wb</span><br><span class="line">@REGS.N=1</span><br><span class="line">@REGS.0= 0 R_PWRCOUNT PWRCOUNT</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="6-2-copy-module-to-main"><a href="#6-2-copy-module-to-main" class="headerlink" title="6.2 copy module to main"></a>6.2 copy module to main</h2><p>两种方法：1.赋值逻辑；2.赋值<em>reference</em>；</p>
+<p><em>let’s define a register, <code>r_pwrcount_data</code>. This register declaration will get placed at the top of the <code>main module</code>, before any logic, so that it can be referenced by any logic below.</em> </p>
+<p>We’ll replace <code>pwrcount</code> within that name by our <code>PREFIX</code> key</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@MAIN.DEFNS=</span><br><span class="line">	reg	[31:0]	r_@$(PREFIX)_data;</span><br></pre></td></tr></table></figure>
+
+<p>Now create the logic that defines this value.</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@MAIN<span class="variable">.INSERT</span>=</span><br><span class="line">	<span class="keyword">initial</span>	r_@$(PREFIX)_data = <span class="number">32&#x27;h0</span>;</span><br><span class="line">	<span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	<span class="keyword">if</span> (r_@$(PREFIX)_data[<span class="number">31</span>])</span><br><span class="line">		r_@$(PREFIX)_data[<span class="number">30</span>:<span class="number">0</span>] &lt;= r_@$(PREFIX)_data[<span class="number">30</span>:<span class="number">0</span>] + <span class="number">1&#x27;b1</span>;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		r_@$(PREFIX)_data[<span class="number">31</span>:<span class="number">0</span>] &lt;= r_@$(PREFIX)_data[<span class="number">31</span>:<span class="number">0</span>] + <span class="number">1&#x27;b1</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">//This is simply because AutoFPGA defines the bus </span></span><br><span class="line">	<span class="comment">//variables for you as though you were going to create </span></span><br><span class="line">	<span class="comment">//and return them via a module–as wires, not registers.</span></span><br><span class="line">	<span class="keyword">assign</span>	@$(PREFIX)_data = r_@$(PREFIX)_data;</span><br></pre></td></tr></table></figure>
+
+<p><strong><font color="red">注意这里的信号类型。<em>autoFPGA</em> 在连线的时候，都假设这些 <em>bus signal</em> 是 <em>wire</em> 类型，而不是<em>register</em>类型</font></strong></p>
+<h1 id="7-Getting-the-address-of-the-last-bus-error"><a href="#7-Getting-the-address-of-the-last-bus-error" class="headerlink" title="7. Getting the address of the last bus error"></a>7. Getting the address of the last bus error</h1><p>we can place just about any logic we want within the <code>@MAIN.INSERT</code> tag. </p>
+<p>Remember, AutoFPGA is primarily a copy and paste utility. All you need to do is to tell it how to wire your code up to the rest of the <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/autofpga-demo/blob/master/auto-generated/main.v">main module</a>.</p>
+<p>其中的语言脚本定义：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@PREFIX=buserr</span><br><span class="line"># ...</span><br><span class="line">@MAIN<span class="variable">.DEFNS</span>=</span><br><span class="line">	<span class="keyword">reg</span>	[@$(SLAVE<span class="variable">.BUS</span><span class="variable">.AWID</span>)-<span class="number">1</span>:<span class="number">0</span>]	r_@$(PREFIX)_addr;</span><br><span class="line">@MAIN<span class="variable">.INSERT</span>=</span><br><span class="line">	<span class="keyword">always</span> @(<span class="keyword">posedge</span> @$(SLAVE<span class="variable">.BUS</span><span class="variable">.CLOCK</span><span class="variable">.WIRE</span>))</span><br><span class="line">		<span class="keyword">if</span> (@$(SLAVE<span class="variable">.BUS</span><span class="variable">.NAME</span>)_err)</span><br><span class="line">			r_@$(PREFIX)_addr &lt;= @$(SLAVE<span class="variable">.BUS</span><span class="variable">.NAME</span>)_addr;</span><br><span class="line">	<span class="keyword">assign</span>	@$(PREFIX)_data = &#123; &#123;(@$(SLAVE<span class="variable">.BUS</span><span class="variable">.WIDTH</span>)-<span class="number">2</span>-@$(SLAVE<span class="variable">.BUS</span><span class="variable">.AWID</span>))&#123;<span class="number">1&#x27;b0</span>&#125;&#125;,</span><br><span class="line">			r_@$(PREFIX)_addr, <span class="number">2&#x27;b00</span> &#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-1-extend-bus"><a href="#7-1-extend-bus" class="headerlink" title="7.1 extend bus"></a>7.1 extend bus</h2><p>where <code>AW</code> is the address width of the bus, and <code>DW</code> is the data width. AutoFPGA needs to be able to support multiple busses, however, of multiple types. For this reason, the <code>@SLAVE.BUS</code> key is expanded into a series of keys:</p>
+<p>This allows us to reference the bus clock using <code>@$(SLAVE.BUS.CLOCK.WIRE)</code>, or even the <code>wb</code> prefix of the bus as <code>@$(SLAVE.BUS.NAME)</code>. This means that the address width of this slave is given by <code>@$(SLAVE.BUS.AWID)</code> and the bus data width is given by <code>@$(SLAVE.BUS.WIDTH)</code>.</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@SLAVE<span class="variable">.BUS</span><span class="variable">.NAME</span>=wb</span><br><span class="line">@SLAVE<span class="variable">.BUS</span><span class="variable">.AWID</span>=<span class="number">16</span></span><br><span class="line">@SLAVE<span class="variable">.BUS</span><span class="variable">.WIDTH</span>=<span class="number">32</span></span><br><span class="line">@SLAVE<span class="variable">.BUS</span><span class="variable">.TYPE</span>=wb</span><br><span class="line">@SLAVE<span class="variable">.BUS</span><span class="variable">.CLOCK</span><span class="variable">.NAME</span>=clk</span><br><span class="line">@SLAVE<span class="variable">.BUS</span><span class="variable">.CLOCK</span><span class="variable">.WIRE</span>=i_clk</span><br><span class="line">@SLAVE<span class="variable">.BUS</span><span class="variable">.CLOCK</span><span class="variable">.FREQUENCY</span>=<span class="number">1000000</span></span><br></pre></td></tr></table></figure>
+
+<p>If you find these long key names tedious, you can rename them within your component. Example:</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@CLK= @$(SLAVE<span class="variable">.BUS</span><span class="variable">.CLOCK</span><span class="variable">.WIRE</span>)</span><br><span class="line">@AW= @$(SLAVE<span class="variable">.BUS</span><span class="variable">.AWID</span>)</span><br><span class="line">@BS= @$(SLAVE<span class="variable">.BUS</span><span class="variable">.NAME</span>)</span><br><span class="line">@DW= @$(SLAVE<span class="variable">.BUS</span><span class="variable">.WIDTH</span>)</span><br></pre></td></tr></table></figure>
+
+<p>Our <code>@MAIN.DEFNS</code> and <code>@MAIN.INSERT</code> tag might have been simplified to</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@MAIN<span class="variable">.DEFNS</span>=</span><br><span class="line">	<span class="keyword">reg</span>	[@$(AW)-<span class="number">1</span>:<span class="number">0</span>]	r_@$(PREFIX)_addr;</span><br><span class="line">@MAIN<span class="variable">.INSERT</span>=</span><br><span class="line">	<span class="keyword">always</span> @(<span class="keyword">posedge</span> @$(CLK))</span><br><span class="line">		<span class="keyword">if</span> (@$(BN)_err)</span><br><span class="line">			r_@$(PREFIX)_addr &lt;= @$(BN)_addr;</span><br><span class="line">	<span class="keyword">assign</span>	@$(PREFIX)_data = &#123; &#123;(@$(DW)-<span class="number">2</span>-@$(AW))&#123;<span class="number">1&#x27;b0</span>&#125;&#125;,</span><br><span class="line">			r_@$(PREFIX)_addr, <span class="number">2&#x27;b00</span> &#125;;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="8-Write-support-for-the-same-value"><a href="#8-Write-support-for-the-same-value" class="headerlink" title="8. Write support for the same value"></a>8. Write support for the same value</h1><blockquote>
+<p>Purpose: </p>
+<p>Now that you know how to read a value from the bus, what about <strong>writing to registers</strong> on the bus?</p>
+<p>Behavior :</p>
+<p>This example peripheral does nothing but <strong>set a value</strong> you give to it upon any write, and then <strong>allow you to read</strong> that value <strong>back</strong> later.</p>
+</blockquote>
+<p><em>In many ways, this peripheral is almost identical to the <a target="_blank" rel="noopener" href="https://zipcpu.com/zipcpu/2017/10/06/autofpga-dataword.html">power counter component</a> we discussed earlier. The difference is that this register can be set via a bus write.</em> </p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@PREFIX=rawreg</span><br><span class="line">@DEVID=RAWREG</span><br><span class="line">@NADDR=1</span><br><span class="line">@SLAVE.TYPE=SINGLE</span><br><span class="line">@SLAVE.BUS=wb</span><br><span class="line">@REGS.N=1</span><br><span class="line">@REGS.0= 0 R_@$(DEVID) @$(DEVID)</span><br><span class="line">@MAIN.DEFNS=</span><br><span class="line">	reg	[31:0]	r_@$(PREFIX)_data;</span><br></pre></td></tr></table></figure>
+
+<p>The difference is found within the <code>@MAIN.INSERT</code> tag describing how this peripheral deals with the bus. (Remember how a <a target="_blank" rel="noopener" href="https://zipcpu.com/zipcpu/2017/05/29/simple-wishbone.html">generic wishbone slave interacts with the bus</a>?)</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@MAIN<span class="variable">.INSERT</span>=</span><br><span class="line">	<span class="keyword">initial</span>	r_@$(PREFIX)_data = <span class="number">32&#x27;h0</span>;</span><br><span class="line">	<span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">		<span class="keyword">if</span> ((wb_stb)&amp;&amp;(wb_we)&amp;&amp;(@$(PREFIX)_sel))</span><br><span class="line">			r_@$(PREFIX)_data &lt;= wb_data;</span><br><span class="line">	<span class="keyword">assign</span>	@$(PREFIX)_data = r_@$(PREFIX)_data;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="9-Reading-values-from-external-ports"><a href="#9-Reading-values-from-external-ports" class="headerlink" title="9.  Reading values from external ports"></a>9.  Reading values from external ports</h1><p>Let’s look at <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/autofpga-demo/blob/master/auto-data/spio.txt">one more example</a> along this same theme. Suppose we wanted to add to our design a register allowing us to: Read from the buttons in our design , etc.</p>
+<p>Start with the keys we’ve already defined above.</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@PREFIX=spio</span><br><span class="line">@NADDR=1</span><br><span class="line">@DEVID=SPIO</span><br><span class="line">@SLAVE.TYPE=SINGLE</span><br><span class="line">@SLAVE.BUS=wb</span><br><span class="line">@REGS.N=1</span><br><span class="line">@REGS.0= 0 R_@$(DEVID)		@$(DEVID)</span><br></pre></td></tr></table></figure>
+
+<h2 id="9-1-KEY-ACCESS"><a href="#9-1-KEY-ACCESS" class="headerlink" title="9.1 KEY  ACCESS"></a>9.1 KEY  ACCESS</h2><p>The <strong>first of these new keys</strong> is an <code>@ACCESS</code> key. It’s an optional key, as you can <strong>tell from</strong> the fact none of our other components above had this key.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@ACCESS=SPIO_ACCESS</span><br></pre></td></tr></table></figure>
+
+<p>This <code>@ACCESS</code> key, if present, will create a <code>define</code> line at the beginning of our <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/autofpga-demo/blob/master/auto-generated/main.v">main.v</a> file.</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">define</span>	SPIO_ACCESS</span></span><br></pre></td></tr></table></figure>
+
+<p>Copy this line from the <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/autofpga-demo/blob/master/auto-generated/main.v">main.v</a> file into a <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/autofpga-demo/blob/master/rtl/design.h">design.h</a> file, allowing any associated C++ files to know whether or not this component is a part of our design. 可以产看自己生成的 <em>design.h</em> 文件里面的定义。</p>
+<h2 id="9-2-Main-Portlists"><a href="#9-2-Main-Portlists" class="headerlink" title="9.2 Main Portlists"></a>9.2 Main Portlists</h2><blockquote>
+<p> Purpose:</p>
+<p> This key specifies values to be placed at the top of <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/autofpga-demo/blob/master/auto-generated/main.v">main.v</a> within the portlist for the <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/autofpga-demo/blob/master/auto-generated/main.v">main module</a>.</p>
+</blockquote>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@MAIN.PORTLIST=</span><br><span class="line">		// @$(DEVID) interface</span><br><span class="line">		i_sw, i_btnc, i_btnd, i_btnl, i_btnr, i_btnu, o_led</span><br></pre></td></tr></table></figure>
+
+<p><em>This key is unique in that the items within it are separated by commas, but that the last item has no comma following it. This allows <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/autofpga">AutoFPGA</a> to put a comma between items, or not, as is necessary to compose multiple component I&#x2F;Os into a design.</em></p>
+<h2 id="9-3-Main-Param"><a href="#9-3-Main-Param" class="headerlink" title="9.3 Main Param"></a>9.3 Main Param</h2><h1 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h1><ul>
+<li>链接： <a target="_blank" rel="noopener" href="https://zipcpu.com/zipcpu/2017/10/06/autofpga-dataword.html">Using AutoFPGA to connect simple registers to a debugging bus</a></li>
+<li></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">冰蒂斯</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2023/12/24/auto2-using/">http://example.com/2023/12/24/auto2-using/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">冰蒂斯のformula</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/autoFPGA/">autoFPGA</a></div><div class="post_share"><div class="social-share" data-image="/img/chainsaw_makima04.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/12/27/S2MM/" title="S2MM"><img class="cover" src="/img/chainsaw_red.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">S2MM</div></div></a></div><div class="next-post pull-right"><a href="/2023/12/12/auto1-introduction/" title="auto1_introduction"><img class="cover" src="/img/flower.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">auto1_introduction</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">冰蒂斯</div><div class="author-info__description">螺旋上升的人生,也是多线程的人生</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">19</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">1.前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-Configuration-File-Format"><span class="toc-number">2.</span> <span class="toc-text">2. Configuration File Format</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-RTL-File-Structure"><span class="toc-number">3.</span> <span class="toc-text">3. RTL File Structure</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-a-simple-ad-hoc-value"><span class="toc-number">4.</span> <span class="toc-text">4. a simple ad-hoc value</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-PREFIX-addr"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 PREFIX &amp; addr</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-Bus-Type-Insert"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 Bus &amp; Type &amp; Insert</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-name-peripheral"><span class="toc-number">4.3.</span> <span class="toc-text">4.3  name peripheral</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-Reading-a-Fixed-Version-number"><span class="toc-number">5.</span> <span class="toc-text">5.  Reading a Fixed Version number</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#6-Reading-access-to-an-internal-changing-register"><span class="toc-number">6.</span> <span class="toc-text">6. Reading access to an internal (changing) register</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-1-bus-declaration"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 bus declaration</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-2-copy-module-to-main"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 copy module to main</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#7-Getting-the-address-of-the-last-bus-error"><span class="toc-number">7.</span> <span class="toc-text">7. Getting the address of the last bus error</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-1-extend-bus"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 extend bus</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#8-Write-support-for-the-same-value"><span class="toc-number">8.</span> <span class="toc-text">8. Write support for the same value</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#9-Reading-values-from-external-ports"><span class="toc-number">9.</span> <span class="toc-text">9.  Reading values from external ports</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#9-1-KEY-ACCESS"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 KEY  ACCESS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-2-Main-Portlists"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 Main Portlists</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-3-Main-Param"><span class="toc-number">9.3.</span> <span class="toc-text">9.3 Main Param</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-number">10.</span> <span class="toc-text">其他</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/01/06/how2blog/" title="how2blog"><img src="/img/reze.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="how2blog"/></a><div class="content"><a class="title" href="/2024/01/06/how2blog/" title="how2blog">how2blog</a><time datetime="2024-01-06T14:34:23.000Z" title="发表于 2024-01-06 22:34:23">2024-01-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/27/S2MM/" title="S2MM"><img src="/img/chainsaw_red.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S2MM"/></a><div class="content"><a class="title" href="/2023/12/27/S2MM/" title="S2MM">S2MM</a><time datetime="2023-12-27T05:57:36.000Z" title="发表于 2023-12-27 13:57:36">2023-12-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/24/auto2-using/" title="auto2-using"><img src="/img/chainsaw_makima04.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="auto2-using"/></a><div class="content"><a class="title" href="/2023/12/24/auto2-using/" title="auto2-using">auto2-using</a><time datetime="2023-12-24T14:17:24.000Z" title="发表于 2023-12-24 22:17:24">2023-12-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/12/auto1-introduction/" title="auto1_introduction"><img src="/img/flower.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="auto1_introduction"/></a><div class="content"><a class="title" href="/2023/12/12/auto1-introduction/" title="auto1_introduction">auto1_introduction</a><time datetime="2023-12-12T06:18:40.000Z" title="发表于 2023-12-12 14:18:40">2023-12-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/10/Verilator-NEW-LOOK/" title="Verilator-NEW-LOOK"><img src="/img/flower.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Verilator-NEW-LOOK"/></a><div class="content"><a class="title" href="/2023/12/10/Verilator-NEW-LOOK/" title="Verilator-NEW-LOOK">Verilator-NEW-LOOK</a><time datetime="2023-12-10T08:38:13.000Z" title="发表于 2023-12-10 16:38:13">2023-12-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By 冰蒂斯</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
