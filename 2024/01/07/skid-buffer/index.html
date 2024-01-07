@@ -1,0 +1,1024 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>skid_buffer | 冰蒂斯のformula</title><meta name="author" content="冰蒂斯"><meta name="copyright" content="冰蒂斯"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="[TOC] 0.资料 芯片设计-握手与反压(valid&amp;ready) - 知乎 (zhihu.com)  zipCPU:Building a Skid Buffer for AXI processing (zipcpu.com)  zipCPU:Strategies for pipelining logic (zipcpu.com)  Skid Buffer &#x2F;&#x2F; 杰哥">
+<meta property="og:type" content="article">
+<meta property="og:title" content="skid_buffer">
+<meta property="og:url" content="http://example.com/2024/01/07/skid-buffer/index.html">
+<meta property="og:site_name" content="冰蒂斯のformula">
+<meta property="og:description" content="[TOC] 0.资料 芯片设计-握手与反压(valid&amp;ready) - 知乎 (zhihu.com)  zipCPU:Building a Skid Buffer for AXI processing (zipcpu.com)  zipCPU:Strategies for pipelining logic (zipcpu.com)  Skid Buffer &#x2F;&#x2F; 杰哥">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/chainsaw_power01.jpg">
+<meta property="article:published_time" content="2024-01-07T12:48:03.000Z">
+<meta property="article:modified_time" content="2024-01-07T12:51:47.361Z">
+<meta property="article:author" content="冰蒂斯">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/chainsaw_power01.jpg"><link rel="shortcut icon" href="/img/bloodborn_lib.png"><link rel="canonical" href="http://example.com/2024/01/07/skid-buffer/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'skid_buffer',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-01-07 20:51:47'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.0.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/head.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/reze.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="冰蒂斯のformula"><span class="site-name">冰蒂斯のformula</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">skid_buffer</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-01-07T12:48:03.000Z" title="发表于 2024-01-07 20:48:03">2024-01-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-01-07T12:51:47.361Z" title="更新于 2024-01-07 20:51:47">2024-01-07</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="skid_buffer"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>[TOC]</p>
+<h1 id="0-资料"><a href="#0-资料" class="headerlink" title="0.资料"></a>0.资料</h1><ul>
+<li><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/503806430">芯片设计-握手与反压(valid&amp;ready) - 知乎 (zhihu.com)</a></p>
+</li>
+<li><p>zipCPU:<a target="_blank" rel="noopener" href="https://zipcpu.com/blog/2019/05/22/skidbuffer.html">Building a Skid Buffer for AXI processing (zipcpu.com)</a></p>
+</li>
+<li><p>zipCPU:<a target="_blank" rel="noopener" href="https://zipcpu.com/blog/2017/08/14/strategies-for-pipelining.html">Strategies for pipelining logic (zipcpu.com)</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://jia.je/hardware/2021/01/26/skid-buffer/">Skid Buffer &#x2F;&#x2F; 杰哥的{运维,编程,调板子}小笔记 (jia.je)</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="http://fpgacpu.ca/fpga/Pipeline_Skid_Buffer.html">Pipeline Skid Buffer (fpgacpu.ca)</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/532012806">芯片设计-skid buffer(ready打断) - 知乎 (zhihu.com)</a></p>
+</li>
+<li><p>Alternately, a Skid Buffer is also known as a Carloni Buffer. For reference, see Abbas and Betz <a target="_blank" rel="noopener" href="http://fpgacpu.ca/fpga/reading.html#elastic">“Latency Insensitive Design Styles for FPGAs”</a> (FPL, 2018).</p>
+</li>
+<li><p>FPGAcpu：<a target="_blank" rel="noopener" href="http://fpgacpu.ca/fpga/Pipeline_Skid_Buffer.html">Pipeline Skid Buffer (fpgacpu.ca)</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_43093575/article/details/126582042">(23条消息) AXI握手时序优化——pipeline缓冲器_skid buffer_达能饼干的博客-CSDN博客</a></p>
+</li>
+</ul>
+<h1 id="1-握手和反压-握手问题"><a href="#1-握手和反压-握手问题" class="headerlink" title="1. 握手和反压&#x3D;&#x3D;(握手问题)&#x3D;&#x3D;"></a>1. 握手和反压&#x3D;&#x3D;(握手问题)&#x3D;&#x3D;</h1><ul>
+<li>直接看：（<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/503806430">芯片设计-握手与反压(valid&amp;ready) - 知乎 (zhihu.com)</a>）</li>
+</ul>
+<p><code>Skid buffer</code> 指的就是，对于 valid + ready 的握手信号，用空间（更多的逻辑）来换取时间（更好的时序）的一个硬件模块。简单来说，背景就是，为了解决 valid 和 ready 信号在数据流水线上一路经过组合逻辑导致的时序问题，在中途加上一些寄存器来阻隔。当然了，代价就是延迟和面积，不过吞吐量还是需要保持的。(文字来源：<a target="_blank" rel="noopener" href="https://jia.je/hardware/2021/01/26/skid-buffer/">Skid Buffer &#x2F;&#x2F; 杰哥的{运维,编程,调板子}小笔记 (jia.je)</a>)</p>
+<h1 id="2-Strategies-for-pipelining-logic"><a href="#2-Strategies-for-pipelining-logic" class="headerlink" title="2. Strategies for pipelining logic"></a>2. <a target="_blank" rel="noopener" href="https://zipcpu.com/blog/2017/08/14/strategies-for-pipelining.html">Strategies for pipelining logic</a></h1><blockquote>
+<p> 该小节重点讲解什么时 skidbuffer，该设计有什么作用？</p>
+</blockquote>
+<p>有很多的来自计算机的同学他么熟悉计算机的软件时序逻辑，一个行为接着一个行为，尽然有序。接触到硬件电路后，他们下意识认为硬件的设计上和软件如出一辙，每一个特定的逻辑或者算法都有对应的硬件电路实现，数据流经所有电路则完成对应的算法。</p>
+<p>但是硬件电路在实现上，并不像软件那样一个数据或者状态接着一个。硬件电路的空间上的状态是同时实现的，不过我们可以通过状态机去选择当下用哪一个状态实现何种算法。</p>
+<blockquote>
+<p><strong>存在一个问题：</strong>如果每一个计算都需要使用状态机来控制。假设该计算需要 A 、B 、C 、D四种处理后才能完成计算，四种状态分别需要 2、2、2 、2 个周期进行数据处理。那么处理一组数据所需要的时间周期是 2+2+2+2 &#x3D; 8.</p>
+<p>有没有什么更好的方法可以节省时间？</p>
+</blockquote>
+<p>可以将数据处理的流程做成流水线形式，这样只需要 2 周期就能完成一组数据处理。</p>
+<blockquote>
+<p><strong>随之而来另一个问题：</strong>The difficult part of a digital logic pipeline is that the pipeline runs and produces outputs even when the inputs to the pipeline are not (yet) valid.</p>
+</blockquote>
+<p>流水线方式处理，如果没有任何约束，容易造成数据丢失或其他错误。后果请参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/503806430">芯片设计-握手与反压(valid&amp;ready) - 知乎 (zhihu.com)</a></p>
+<h2 id="2-1-The-global-valid-非重点"><a href="#2-1-The-global-valid-非重点" class="headerlink" title="2.1 The global valid(非重点)"></a>2.1 The global valid(非重点)</h2><p>第一种方法是很简单，遵守两个逻辑：</p>
+<ul>
+<li>具有一个 global CE (clock enable) 信号，该信号与 Clock 时钟同步 ；</li>
+<li>每次 sample 到 CE &#x3D;&#x3D; 1 ，开始进行各个部分的逻辑处理 ；</li>
+</ul>
+<img src="https://zipcpu.com/img/pipeline-global-ce.svg" alt="Pipelining with a global valid signal" style="zoom: 25%;" />
+
+<p>原文对该类型处理方式的<strong>行为描述</strong>：</p>
+<p><em>Each stage just waits for the global valid signal to be true, and then applies its logic.</em></p>
+<p>该中处理方式存在特别<strong>重大问题</strong>：</p>
+<ul>
+<li><p>It does handle the needs of a crucial problem set: <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Digital_signal_processing"><em>signal processing</em></a>.</p>
+</li>
+<li><p>在FPGA同时钟域下，所有的数据都以相同的时钟频率进行移动，永远不会突然加速或者减速，这种情况对于<strong>全局</strong>信号的处理十分有效。任何以固定数据速率工作的东西通常都是这种流水线方法的理想选择。如果各个模块处理速度不一样那么就会出问题。（最后一句是自己加的）</p>
+</li>
+<li><p>The global valid signal we discussed above, though, has two basic problems. </p>
+<ul>
+<li>The <strong>first problem</strong> is that there’s <strong>no way</strong> to know <strong>if</strong> an output sample is “valid” or not”. </li>
+<li>The <strong>second</strong> is that the whole operation depends upon a uniform clock creating the <code>CE</code> signal. What happens <strong>if the data is produced in a bursty fashion</strong>, and you want to know not only <em>when</em> the output is valid but also <em>if</em> the output is valid? In this case, another approach is required.(处理不了突发传输)</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-2-The-traveling-CE-非重点"><a href="#2-2-The-traveling-CE-非重点" class="headerlink" title="2.2 The traveling CE(非重点)"></a>2.2 The traveling CE(非重点)</h2><p><img src="https://zipcpu.com/img/pipeline-blocks-traveling-ce.svg" alt="Pipeline block diagram of a traveling CE"></p>
+<p><strong>基本行为逻辑</strong>：</p>
+<blockquote>
+<p>CE 随着每次（输入or输出）的数据有效，被同时中周期拉高；</p>
+</blockquote>
+<blockquote>
+<p>Nothing is allowed to change <em>except</em> on a <code>CE</code> signal</p>
+</blockquote>
+<blockquote>
+<p>every piece of logic must be ready, at all time。This particular pipeline strategy <strong>cannot handle stalls</strong>.</p>
+</blockquote>
+<img src="https://zipcpu.com/img/pipeline-traveling-ce.svg" alt="Pipelining with a traveling CE" style="zoom: 25%;" />
+
+<p>问题：</p>
+<blockquote>
+<p>如果没有接受端口，那么数据会一直压在最后一级，导致数据丢失。</p>
+</blockquote>
+<blockquote>
+<p> The biggest problem with the traveling CE approach to pipelining is that there’s no way to handle the case where the listener isn’t ready. </p>
+</blockquote>
+<h2 id="2-3-handshake-略"><a href="#2-3-handshake-略" class="headerlink" title="2.3 handshake(略)"></a>2.3 handshake(略)</h2><img src="https://zipcpu.com/img/pipeline-blocks-handshake.svg" alt="A simple handshake pipeline signal" style="zoom:33%;" />
+
+<p>观察下面的时序逻辑图，在 Busy信号拉高的时候，STB信号如果拉高会一直保持 1’b1 信号状态。</p>
+<img src="https://zipcpu.com/img/pipeline-handshake.svg" alt="A simple handshake pipeline signal" style="zoom:25%;" />
+
+<p>(这里存在的问题可以参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/503806430">应急方案3和4的区别</a>)</p>
+<h2 id="2-4-The-buffered-handshake"><a href="#2-4-The-buffered-handshake" class="headerlink" title="2.4  The buffered handshake"></a>2.4  The buffered handshake</h2><p>该小节最开始提出了 handshake 的问题，表示在流水线太长、始终频率过快的情况下会出现下面的问题：any time a <code>BUSY</code> signal needs to pass combinationally from the <code>N</code>th stage back to the first stage, the time required increases at each stage. （最后一级的的busy信号传递到第一级需要时间长，中间N级流水线数据全部打水漂）</p>
+<blockquote>
+<p>在这里要申明一个概念介绍：This means that when a subsequent pipeline stage isn’t ready (a pipeline stall), it will cost a clock until the <code>BUSY</code> line can be true. 在这句话中“isn’t ready” 等价于 “a pipeline stall”这句话要有个概念。</p>
+</blockquote>
+<h3 id="1-Data-Flow"><a href="#1-Data-Flow" class="headerlink" title="1. Data Flow"></a>1. Data Flow</h3><p>&#x3D;&#x3D;<em>A four stage pipeline using a buffered handshake</em>&#x3D;&#x3D;</p>
+<p>This figure shows four separate pipeline stages, from the data source or generator, to the ultimate consumer of the data. </p>
+<p><img src="https://zipcpu.com/img/pipeline-blocks-dbl-1.svg" alt="Block diagram of a 4-stage pipeline using a buffered handshake.  Sequence #1"></p>
+<p>特点：</p>
+<ul>
+<li>currently full ；</li>
+<li>with each stage having a payload value within it ；</li>
+</ul>
+<p><strong>周期1</strong>：&#x3D;&#x3D;<em>Final pipeline stage stalls</em>&#x3D;&#x3D;</p>
+<p><strong><font color="orange">shows what happens if the final stage in this pipeline stalls on the next clock.</font></strong></p>
+<p><img src="https://zipcpu.com/img/pipeline-blocks-dbl-2.svg" alt="Block diagram of a 4-stage pipeline using a buffered handshake.  Sequence #2--stall starts"></p>
+<p><code>Stage[2]</code>的数据因为 <code>Data sink</code> 发出的 <code>Busy</code> 信号无法到达下一级。此时<code>Stage[2]</code> 无法立刻向<code>Stage[1]</code>发出<code>Busy</code>信号，所以<code>Stage[2]</code> 在存储自身 <code>Payload#3</code>的同时需要存储<code>Stage[1]</code>传来的  <code>Payload#4</code>。</p>
+<p><strong>周期2</strong>：&#x3D;&#x3D;<em>The stall propagates</em>&#x3D;&#x3D;</p>
+<p><code>Stage[2]</code> 在<strong>周期1</strong>收到Data sink 的Busy信号，但是不能立即发向stage[1]。</p>
+<p>在<strong>周期2</strong>终于向<code>Stage[1]</code>发出<code>Busy</code>信号：<em>已经装不下了，别发了，上一beat忘了告诉你，我暂时存一个你的数据，现在已经给你说了，下个周期就别发给我了！！！</em></p>
+<p><img src="https://zipcpu.com/img/pipeline-blocks-dbl-3.svg" alt="Block diagram of a 4-stage pipeline using a buffered handshake.  Sequence #3--stall propagates"></p>
+<p><strong>周期3</strong>：&#x3D;&#x3D;<em>The pipeline starts to clear</em>&#x3D;&#x3D;</p>
+<p><code>stage[1]</code> 在这个<strong>周期3</strong>收到了信息，不能再向前发送 <code>Payload#5</code>，但是他又来不及向 <code>Data Source</code> 发送 <code>Busy</code> 信号。无奈下， <code>stage[1]</code>也只能再多存储上级发来的 <code>Payload#6</code> 数据。</p>
+<p>与此同时，最开始卡住的 <code>Data sink</code> 终于处理好了自己的事情，表示可以继续传输数据了，撤销了 <code>Busy</code> 信号</p>
+<p><img src="https://zipcpu.com/img/pipeline-blocks-dbl-4.svg" alt="Block diagram of a 4-stage pipeline using a buffered handshake.  Sequence #4--initial stall clears"></p>
+<p><strong>周期4</strong>：&#x3D;&#x3D;<em>The pipeline continues to clear</em>&#x3D;&#x3D;</p>
+<p> <code>stage[2]</code> 在<strong>周期3</strong>收到了<code>no Busy</code>信号，终于可以在<strong>周期4</strong>把积压的 <code>payload#3</code>发出去了，然后对上一级拉低Busy。不过上一级才收到信号，不能立刻作出反应。</p>
+<p><img src="https://zipcpu.com/img/pipeline-blocks-dbl-5.svg" alt="Block diagram of a 4-stage pipeline using a buffered handshake.  Sequence #5--Continues to clear"></p>
+<p><strong>周期5</strong>：&#x3D;&#x3D;<em>The pipeline finally clears</em>&#x3D;&#x3D;</p>
+<p>在<strong>周期4</strong>中 <code>stage[1]</code>收到了<code>no busy</code> 信号，<strong>周期5</strong>开始进行处理，传递挤压得  <code>payload#5</code>数据</p>
+<p><img src="https://zipcpu.com/img/pipeline-blocks-dbl-6.svg" alt="Block diagram of a 4-stage pipeline using a buffered handshake.  Sequence #6--Stall has cleared"></p>
+<h3 id="2-Difference-Rules"><a href="#2-Difference-Rules" class="headerlink" title="2. Difference &amp; Rules"></a>2. Difference &amp; Rules</h3><blockquote>
+<p>This pipeline uses the same <code>STB</code> and <code>BUSY</code> signals that we’ve used for the simple handshaking approach to pipelining. The difference with this approach is that the <code>BUSY</code> signal is &#x3D;&#x3D;registered, and must wait on a clock to propagate.&#x3D;&#x3D;</p>
+</blockquote>
+<p>现在捋一捋 <code>skidbuffer handshake</code>得规则：</p>
+<ul>
+<li><p><strong>何时传输</strong>：A data transfer takes place any time <code>(STB)&amp;&amp;(!BUSY)</code> whether the given pipeline stage is ready for it or not.</p>
+</li>
+<li><p><strong>何时缓存</strong>：If the <strong>output</strong> <code>(STB)&amp;&amp;(BUSY)</code> are true, but the <strong>input</strong> <code>(STB)&amp;&amp;(!BUSY)</code> is true, the data must be stored into a buffer.（<em>输出端收到next stage 得busy 信号，输入端还没来得及 back pressure反压，输入端向previous stage 发送 no busy ，这个时候存储自身data得同时，也要一并存储上一级得data，Assert Input BUSY</em>）</p>
+</li>
+<li><p><strong>何时释放缓存</strong>：If <code>BUSY</code> is true on the input, but <code>BUSY</code> isn’t true on the output, then the buffer’s values can be released and sent forwards and we can set <code>BUSY</code> for the incoming data to be false.</p>
+<p>（<strong>这段描述有问题，具体查看周期4中 stage[1]的行为</strong>）</p>
+</li>
+</ul>
+<h3 id="3-behavior-design（-伪-）"><a href="#3-behavior-design（-伪-）" class="headerlink" title="3. behavior design（&#x3D;&#x3D;伪&#x3D;&#x3D;）"></a>3. behavior design（&#x3D;&#x3D;伪&#x3D;&#x3D;）</h3><blockquote>
+<p>如何命名？</p>
+</blockquote>
+<blockquote>
+<p>The following logic is rather confusing when it comes to naming, since both input and output ports share names. </p>
+<p>I’ll use the <code>i_</code> prefix to reference <strong>a wire coming into</strong> a stage, whether the <code>i_stb</code> line coming from the previous stage or the <code>i_busy</code> line coming from the subsequent stage. In a similar manner, I’ll use the <code>o_</code> prefix to reference <strong>logic leaving this stage</strong>, whether the <code>o_stb</code> sent to the subsequent pipeline stage to indicate that this stage has something to pass on, or the <code>o_busy</code> line to send to the previous stage to indicate that this stage is now busy.</p>
+<p>We’ll also use the <code>r_</code> prefix to reference values <strong>within our register</strong>, both <code>r_stb</code> to indicate that something valid is in it as well as <code>r_data</code> to indicate the value of what’s in it.</p>
+</blockquote>
+<p><font color="red"><strong>下面的代码执行简单描述行为逻辑，未经过波形验证，彼此信号之间也没有必然联系。可以当伪代码。</strong></font></p>
+<h4 id="3-1-reset"><a href="#3-1-reset" class="headerlink" title="3.1 reset"></a>3.1 reset</h4><ul>
+<li><code>current stage</code> 无缓存；</li>
+<li><code>current stage</code> 无有效数据 ；</li>
+<li><code>current stage no busy</code>；</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">initial</span>	r_stb  = <span class="number">1&#x27;b0</span>;<span class="comment">// register , indicate something is value </span></span><br><span class="line"><span class="keyword">initial</span>	o_stb  = <span class="number">1&#x27;b0</span>;<span class="comment">// indicate something pass to next stage</span></span><br><span class="line"><span class="keyword">initial</span>	o_busy = <span class="number">1&#x27;b0</span>;<span class="comment">// to previous stage</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)<span class="keyword">begin</span></span><br><span class="line">	<span class="keyword">if</span> (i_reset)<span class="keyword">begin</span></span><br><span class="line">		r_stb  &lt;= <span class="number">1&#x27;b0</span>;</span><br><span class="line">		o_stb  &lt;= <span class="number">1&#x27;b0</span>;</span><br><span class="line">		o_busy &lt;= <span class="number">1&#x27;b0</span>;</span><br><span class="line">		<span class="comment">// Data is a don&#x27;t care</span></span><br><span class="line">    <span class="comment">// o_valid 失效，数据是什么无所谓</span></span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-2-normal"><a href="#3-2-normal" class="headerlink" title="3.2 normal"></a>3.2 normal</h4><p>&#x3D;&#x3D;the case where the next or subsequent stage isn’t <code>BUSY</code>.&#x3D;&#x3D;</p>
+<p>数据情况：（略）</p>
+<p>图像展示1：</p>
+<p><img src="https://zipcpu.com/img/pipeline-blocks-dbl-6.svg" alt="Block diagram of a 4-stage pipeline using a buffered handshake.  Sequence #6--Stall has cleared"></p>
+<p>图像展示2：</p>
+<p><img src="https://zipcpu.com/img/pipeline-blocks-dbl-5.svg" alt="Block diagram of a 4-stage pipeline using a buffered handshake.  Sequence #5--Continues to clear"></p>
+<p>解决行为逻辑：</p>
+<ul>
+<li><strong>数据有效（valid信号的传递</strong>）：<ul>
+<li>Under normal flow, we’ll want to <strong>copy</strong> the input strobe <code>i_stb</code> to the output strobe, <code>o_stb</code>.</li>
+</ul>
+</li>
+<li><strong>如果没有缓存r_stb</strong>：<ul>
+<li>Further, some data may need to be applied to <code>i_data</code> to create the output <code>o_data</code>. We’ll use the notation <code>logic(i_data)</code> to indicate this. The <code>logic()</code> function is not intended to be valid Verilog, but rather to convey the concept of what’s taking place.</li>
+<li>直接传输 i_stb 数据有效信号， </li>
+<li>传输 <code>i_data</code> 数据处理结果<code>o_data  &lt;= logic(i_data)</code>;</li>
+</ul>
+</li>
+<li><strong>如果有缓存r_stb</strong>：<ul>
+<li><strong>输出数据o_stb有效，输出寄存r_data数据</strong>：<code>o_stb</code> must also be true and <code>o_data</code> valid. Since <code>(o_stb)&amp;&amp;(!i_busy)</code>, a transaction has taken place and <code>r_stb</code> can be copied to <code>o_stb</code>, and <code>r_data</code> to <code>o_data</code>–flushing our buffer.</li>
+<li><strong>清理 o_busy；</strong></li>
+<li><strong>清理寄存有效 r_stb；</strong>（r_valid 和 o_busy 有联系）</li>
+</ul>
+</li>
+</ul>
+<p>代码如下：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Always block continued ... (i_reset) is false</span></span><br><span class="line">	</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (!i_busy) <span class="comment">// the next stage is not busy，可以传递给 next stage</span></span><br><span class="line">	<span class="keyword">begin</span></span><br><span class="line">    <span class="keyword">if</span> (!r_stb)<span class="comment">// register内信息是否有效，0则代表无信息</span></span><br><span class="line">		<span class="keyword">begin</span></span><br><span class="line">			<span class="comment">// Nothing is in the buffer, so send the input</span></span><br><span class="line">			<span class="comment">// directly to the output.</span></span><br><span class="line">			o_stb   &lt;= i_stb;</span><br><span class="line"></span><br><span class="line">			<span class="comment">// This logic() function is arbitrary, and specific</span></span><br><span class="line">			<span class="comment">// the what this stage is supposed to do.</span></span><br><span class="line">      <span class="comment">// 可以设想将i_data数据通过一定的逻辑assign，抽象为 logic()</span></span><br><span class="line">			o_data  &lt;= <span class="keyword">logic</span>(i_data);</span><br><span class="line">      </span><br><span class="line">      </span><br><span class="line">		<span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">begin</span></span><br><span class="line">			<span class="comment">// o_busy is true and something is in our buffer.</span></span><br><span class="line">			<span class="comment">// Flush the buffer to the output port.</span></span><br><span class="line">			o_stb  &lt;= <span class="number">1&#x27;b1</span>;</span><br><span class="line">			o_data &lt;= r_data; <span class="comment">// This is the buffered data</span></span><br><span class="line"></span><br><span class="line">			<span class="comment">// We can ignore the input in this case, since</span></span><br><span class="line">			<span class="comment">// we&#x27;ll only be here if `o_busy` is also true.</span></span><br><span class="line">		<span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">		<span class="comment">// We can also clear any stall condition</span></span><br><span class="line">		o_busy  &lt;= <span class="number">1&#x27;b0</span>;</span><br><span class="line">    </span><br><span class="line">		<span class="comment">// And declare the register to be empty.</span></span><br><span class="line">		r_stb   &lt;= <span class="number">1&#x27;b0</span>;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-3-o-stb-0-i-busy-1"><a href="#3-3-o-stb-0-i-busy-1" class="headerlink" title="3.3   o_stb &#x3D;&#x3D;0  &amp;  i_busy &#x3D;&#x3D; 1"></a>3.3   o_stb &#x3D;&#x3D;0  &amp;  i_busy &#x3D;&#x3D; 1</h4><p>这个状态没有展现在上面的图像中。该种情况是：a pipeline stage has no data payload within it at all.</p>
+<p><strong>数据展示情况：</strong></p>
+<ul>
+<li><p><code>o_stb == 0</code>：current stage内<strong>无</strong>有效数据传输给 nexy stage；</p>
+</li>
+<li><p><code>i_busy == 1</code>：next stage 不接受新数据；</p>
+</li>
+<li><p>也有可能出现：即便发出了  <code>o_stb</code>，但是下一级表示 <code>i_busy</code> flag ，无法进行握手！</p>
+</li>
+</ul>
+<p><strong>解决行为逻辑：</strong></p>
+<ul>
+<li><code>o_stb</code>信号处理：传递previous stage 的 i_stb 信号；<strong>因为本地buffer中无有效数据（存在一个气泡），允许挤压这个气泡；</strong></li>
+<li><code>o_busy</code>信号处理：告诉上级 no busy；万一下一个周期正常流水了呢，就算没流水，也可以暂时缓存。要busy也是下个周期再做。</li>
+<li><code>r_valid</code> 是否有效： 不缓存 r_valid &#x3D;&#x3D; 0；</li>
+<li><code>r_data</code> 是否有效： 不缓存 r_data ；</li>
+<li><code>o_data</code> 数据处理：传递输入数据 ——&gt; 输出接口，直接进行 copy行为；</li>
+</ul>
+<p><strong>代码如下：</strong></p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Always block continued ... (i_reset) is false, (i_busy) is true</span></span><br><span class="line">	<span class="comment">//实际意义：没有有效数据可以pass to next stage </span></span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (!o_stb) <span class="keyword">begin</span></span><br><span class="line">		o_stb  &lt;= i_stb; <span class="comment">//查询上级是否有 有效信号</span></span><br><span class="line">		o_busy &lt;= <span class="number">1&#x27;b0</span>;  <span class="comment">// 告诉上级 no busy</span></span><br><span class="line"></span><br><span class="line">		<span class="comment">// Keep the buffer empty</span></span><br><span class="line">		r_stb &lt;= <span class="number">1&#x27;b0</span>;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Apply the logic to the input data, and set the output data</span></span><br><span class="line">		o_data &lt;= <span class="keyword">logic</span>(i_data);</span><br><span class="line">	<span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h4 id="3-4-o-stb-1-i-busy-1"><a href="#3-4-o-stb-1-i-busy-1" class="headerlink" title="3.4  o_stb &#x3D;&#x3D;1 &amp; i_busy &#x3D;&#x3D;1"></a>3.4  o_stb &#x3D;&#x3D;1 &amp; i_busy &#x3D;&#x3D;1</h4><p>数据所展示情况：</p>
+<ul>
+<li><code>i_busy ==1</code> ：表示我们被next stage 告知无法接受数据；</li>
+<li><code>o_stb ==1</code> ：表示我们已经有一个数据准备发给 next stage，已经有一个 <code>payload</code>;</li>
+</ul>
+<p>图像参考 stage[2]：</p>
+<p><img src="https://zipcpu.com/img/pipeline-blocks-dbl-2.svg" alt="Block diagram of a 4-stage pipeline using a buffered handshake.  Sequence #2--stall starts"></p>
+<p><img src="https://zipcpu.com/img/pipeline-blocks-dbl-3.svg" alt="Block diagram of a 4-stage pipeline using a buffered handshake.  Sequence #3--stall propagates">解决行为逻辑：</p>
+<ul>
+<li><p>接受存储：indicates we have a payload loaded, and we now need to store our input into our buffer. </p>
+</li>
+<li><p>向前busy：we’ll set <code>r_stb</code> and mark this stage of the pipeline as <code>BUSY</code> with <code>o_busy</code>.（缓存输入数据，并且拉高 o_busy）</p>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Always block continued ... (i_reset) is false, (i_busy) and (o_stb) are both</span></span><br><span class="line"><span class="comment">// true.</span></span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> ((i_stb)&amp;&amp;(!o_busy)) <span class="keyword">begin</span></span><br><span class="line">		<span class="comment">// If the next stage *is* busy, though, and we haven&#x27;t</span></span><br><span class="line">		<span class="comment">// stalled yet, then we need to accept the requested value</span></span><br><span class="line">		<span class="comment">// from the input.  We&#x27;ll place it into a termporary</span></span><br><span class="line">		<span class="comment">// location.</span></span><br><span class="line">    r_stb  &lt;= (i_stb)&amp;&amp;(o_stb);<span class="comment">//接受存储</span></span><br><span class="line">    o_busy &lt;= (i_stb)&amp;&amp;(o_stb);<span class="comment">//向前busy</span></span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-5-deal-with-r-data"><a href="#3-5-deal-with-r-data" class="headerlink" title="3.5  deal with r_data"></a>3.5  deal with r_data</h4><p>在小节 3.4 这种情况下需要缓存 数据数据，这个数据是经过逻辑处理后的 预输出数据；</p>
+<h3 id="4-Bugs"><a href="#4-Bugs" class="headerlink" title="4. Bugs"></a>4. Bugs</h3><ul>
+<li><p>上面的代码都未经行为测试。</p>
+</li>
+<li><p><code>r_stb</code> and <code>o_busy</code> above are the same signal. I’ve kept them separate for conceptual understanding, but these two can be combined into a single signal.</p>
+</li>
+</ul>
+<h1 id="3-The-basic-concept-of-the-skid-buffer"><a href="#3-The-basic-concept-of-the-skid-buffer" class="headerlink" title="3. The basic concept of the skid buffer"></a>3. <a target="_blank" rel="noopener" href="https://zipcpu.com/blog/2019/05/22/skidbuffer.html">The basic concept of the skid buffer</a></h1><p>虽然在之前的章节中描述了 skidbuffer 所解决的问题，这里还是再引述一下作者的例子。</p>
+<blockquote>
+<p>一个CPU对一个指令进行解读，需要：1.先从 memory 或者 cache 中读取指令；2.该指令被解读输送进 decode ； 3.指令在decoder中被译码。如果这一个流程123全都是组合逻辑会怎样？</p>
+</blockquote>
+<p>结果会是：</p>
+<blockquote>
+<p>3译码为解决，拉高输送信号2；2不能被改变，拉高1指令，不允许指令被改变；指令不能被改变，则不能进行预取指；</p>
+<p>如果想要在一个周期内，使用组合逻辑完成指令的完整解读，所用时间会很长。相应的一个 clock 周期需要很长来处理这个组合逻辑电路。那么电路注定不能再很高的频率进行工作，整体工作速度受到限制；</p>
+</blockquote>
+<p>Skid buffer 用来创建 register signals 和 combinatorial signal 之间的桥梁。(<strong><font color="red">即便看了代码我也有点不理解</font></strong>)</p>
+<img src="https://zipcpu.com/img/skidbuffer/skidbuffer-blockdiag.svg" alt="img" style="zoom: 50%;" />
+
+<p>Skid buffer 必须满足两个条件：</p>
+<ul>
+<li><strong>正常握手</strong>：First, if ever <code>VALID &amp; !READY</code>, the respective data values must remain constant into the next clock cycle. <ul>
+<li>还是握手信号的 valid before ready。</li>
+</ul>
+</li>
+<li><strong>不丢信号</strong>：Second, no piece of data may be lost along the way.</li>
+</ul>
+<h2 id="3-0-Rules-of-Handshake-体现"><a href="#3-0-Rules-of-Handshake-体现" class="headerlink" title="3.0 Rules of Handshake(体现)"></a>3.0 Rules of Handshake(体现)</h2><p>&#x3D;&#x3D;SV代码描述：&#x3D;&#x3D;</p>
+<ul>
+<li><code>$stable</code> 是一个系统任务，用于检测给定信号的值是否在上一个时钟周期内保持不变。如果表达式在上一个时钟周期内的值与当前时钟周期内的值相同，则 $stable(expression) 返回 True;</li>
+<li><code>$past</code> 返回上一周期时钟上升沿的信号数值；</li>
+<li>例如，<code>A |=&gt; B</code> 表示当序列 <code>A</code> 成功时，序列 <code>B</code> 必须立即开始。当 <code>(i_valid &amp;&amp; !o_ready)</code> 成立时，<code>i_valid &amp;&amp; $stable(i_data)</code> 必须立即成立。</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// First, we assume this property of the input</span></span><br><span class="line"><span class="keyword">assume</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	<span class="keyword">disable</span> <span class="keyword">iff</span> (i_reset)</span><br><span class="line">                  <span class="comment">//左侧，两个输入不变</span></span><br><span class="line">	(i_valid &amp;&amp; !o_ready) |=&gt; i_valid &amp;&amp; <span class="built_in">$stable</span>(i_data));</span><br><span class="line"></span><br><span class="line">   </span><br><span class="line"><span class="comment">// Then we assert it when describing the output</span></span><br><span class="line"><span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	<span class="keyword">disable</span> <span class="keyword">iff</span> (i_reset)</span><br><span class="line">                  <span class="comment">//右侧，两个输出不变</span></span><br><span class="line">	(o_valid &amp;&amp; !i_ready) |=&gt; o_valid &amp;&amp; <span class="built_in">$stable</span>(o_data));</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<h2 id="3-1-经典三状态"><a href="#3-1-经典三状态" class="headerlink" title="3.1 经典三状态"></a>3.1 经典三状态</h2><blockquote>
+<p>pass through device</p>
+<p>With no stalls, the buffer acts like a operate like a pass through device</p>
+</blockquote>
+<img src="https://zipcpu.com/img/skidbuffer/skidbuffer-passthrough.svg" alt="img" style="zoom:50%;" />
+
+<blockquote>
+<p>Copying the incoming data to an internal buffer</p>
+<p>此时 o_ready 我不知道状态， i_valid 和 i_data 属于有效状态，但是 i_ready &#x3D;&#x3D; 0 ，所以  i_valid 和 i_data 保存到了 buffer中</p>
+</blockquote>
+<img src="https://zipcpu.com/img/skidbuffer/skidbuffer-copy.svg" alt="img" style="zoom: 50%;" />
+
+<blockquote>
+<p>The stall signal propagates upstream</p>
+<p>o_ready &#x3D;&#x3D; 0 ，此时 i_valid 和 i_data[N-1:0] 无论是否有效，都保持寄存在左侧。 i_ready &#x3D;&#x3D;1 ，buffer中的数据被读出</p>
+</blockquote>
+<img src="https://zipcpu.com/img/skidbuffer/skidbuffer-active.svg" alt="img" style="zoom:50%;" />
+
+
+
+<h2 id="3-2-Optional-Enhancements"><a href="#3-2-Optional-Enhancements" class="headerlink" title="3.2 Optional Enhancements"></a>3.2 Optional Enhancements</h2><p>破案了，我就说怎么对不上信息，<font color="red"><strong>结果代码的 skidbuffer 根本就不是 左R右C，而是左C右R。这么说也不对，应该看参数 opt_outrage 的设置</strong>.</font></p>
+<p><strong>关于这点的理解受到阻碍，需要进一步实践加深理解</strong></p>
+<p>所以我猜：</p>
+<ul>
+<li>左R右C：skidbuffer直接当组合逻辑使用；</li>
+<li>左C右R：skidbuffer内部才需要加入 FF触发器；</li>
+</ul>
+<p>the biggest difference are the set of  flip-flops used to register the outputs.通过  <code>OPT_OUTREG</code> 参数改变逻辑：created a parameter which could be used to select between them, <code>OPT_OUTREG</code>. When this parameter is set, the skid buffer  will register all outputs. When it isn’t set, the outputs can then be combinatorially driven. In all cases, the upstream stall signal will be registered.</p>
+<ul>
+<li><strong>左R右C</strong>：use combinatorial logic to create the outgoing interface whenever the skid buffer was used on an incoming  AXI channel；左接AXI 通道，右侧接 slave interface。</li>
+</ul>
+<img src="https://zipcpu.com/img/skidbuffer/skidbuffer-blockdiag.svg" alt="img" style="zoom: 33%;" />
+
+<ul>
+<li><strong>左C右R</strong> ：combinatorial logic on the incoming interface whenever the skid buffer  was used to drive an outgoing  AXI channel；右接 AXI 通道，左接 master interface。</li>
+</ul>
+<img src="https://zipcpu.com/img/skidbuffer/skidbuffer-blockdiag-outreg.svg" alt="img" style="zoom: 33%;" />
+
+
+
+
+
+<h2 id="3-3-Internal-Signal（-伪内部逻辑-）"><a href="#3-3-Internal-Signal（-伪内部逻辑-）" class="headerlink" title="3.3 Internal Signal（&#x3D;&#x3D;伪内部逻辑&#x3D;&#x3D;）"></a>3.3 Internal Signal（&#x3D;&#x3D;伪内部逻辑&#x3D;&#x3D;）</h2><p><a target="_blank" rel="noopener" href="https://github.com/ZipCPU/wb2axip/blob/master/rtl/skidbuffer.v">详细代码可以参见该 github</a></p>
+<p><em>顶层接口和参数：</em></p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> skidbuffer(</span><br><span class="line">    i_clk,</span><br><span class="line">    i_reset,</span><br><span class="line">  </span><br><span class="line">		<span class="comment">//左侧数据</span></span><br><span class="line">    i_valid,o_ready,i_data,              </span><br><span class="line">    <span class="comment">//右侧数据           </span></span><br><span class="line">		o_valid,i_ready,o_data</span><br><span class="line">           );</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//测试逻辑使用 0/1 时候用的参数</span></span><br><span class="line">  <span class="keyword">parameter</span>	[<span class="number">0</span>:<span class="number">0</span>]	OPT_LOWPOWER = <span class="number">0</span>;			</span><br><span class="line">	<span class="keyword">parameter</span>	[<span class="number">0</span>:<span class="number">0</span>]	OPT_OUTREG = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<p><em>接口的信号类型：</em></p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">	<span class="keyword">parameter</span>		DW = <span class="number">8</span>;</span><br><span class="line">	<span class="keyword">input</span>	<span class="keyword">wire</span>			i_clk, i_reset;</span><br><span class="line"></span><br><span class="line"><span class="comment">//左侧信号</span></span><br><span class="line">	<span class="keyword">input</span>		<span class="keyword">wire</span>						i_valid;</span><br><span class="line">	<span class="keyword">output</span>	<span class="keyword">reg</span>							o_ready;<span class="comment">//   R</span></span><br><span class="line">	<span class="keyword">input</span>		<span class="keyword">wire</span>	[DW-<span class="number">1</span>:<span class="number">0</span>]	i_data;</span><br><span class="line"></span><br><span class="line"><span class="comment">//右侧信号</span></span><br><span class="line">	<span class="keyword">output</span>	<span class="keyword">reg</span>							o_valid;<span class="comment">//   R</span></span><br><span class="line">	<span class="keyword">input</span>		<span class="keyword">wire</span>						i_ready;</span><br><span class="line">	<span class="keyword">output</span>	<span class="keyword">reg</span>	[DW-<span class="number">1</span>:<span class="number">0</span>]		o_data; <span class="comment">//   R</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// We&#x27;ll start with skid buffer itself</span></span><br><span class="line">	<span class="keyword">reg</span>								r_valid;</span><br><span class="line">	<span class="keyword">reg</span>		[DW-<span class="number">1</span>:<span class="number">0</span>]		r_data;</span><br></pre></td></tr></table></figure>
+
+<p>在创建的 skidbuffer 中我们需要捕获两个信号， r_valid &amp; r_data 。</p>
+<h3 id="3-3-1-r-valid-信号"><a href="#3-3-1-r-valid-信号" class="headerlink" title="3.3.1  r_valid 信号"></a>3.3.1  r_valid 信号</h3><ul>
+<li>The first, <code>r_valid</code>, just indicates that the internal buffer has valid data within it.<ul>
+<li>The basic logic for this <code>r_valid</code> signal is that we want it to go high any time there’s a valid incoming signal but the outgoing path is stalled.</li>
+</ul>
+</li>
+</ul>
+<p>展示行为逻辑的非验证代码如下：</p>
+<p>​		左侧数据有效并且ready有效，右侧数据有效，i_ready无效。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">	<span class="keyword">initial</span>	r_valid = <span class="number">0</span>;</span><br><span class="line">	</span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk) <span class="keyword">begin</span></span><br><span class="line">	<span class="keyword">if</span> (i_reset)</span><br><span class="line">		r_valid &lt;= <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> ((i_valid &amp;&amp; o_ready) &amp;&amp; (o_valid &amp;&amp; !i_ready))</span><br><span class="line">		<span class="comment">// We have incoming data, but the output is stalled</span></span><br><span class="line">		r_valid &lt;= <span class="number">1</span>;</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>当 <code>i_ready == 1</code> 正常接收的时候，无论此时什么情况，下一周期 <code>i_clk</code> 上升沿去除 <code>buffer</code> 存储。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (i_ready)</span><br><span class="line">	r_valid &lt;= <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-3-2-r-data-信号"><a href="#3-3-2-r-data-信号" class="headerlink" title="3.3.2  r_data 信号"></a>3.3.2  r_data 信号</h3><p>该信号的行为逻辑相对简单： Any time the outgoing combinatorial side is ready, we’ll just quietly copy the incoming value into our buffer.（ 只要右侧combinatorial logic i_ready拉高，r_data 送入 o_data ，同时送入 r_data）；</p>
+<p><strong><font color="red">这部分有问题</font></strong></p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk) <span class="keyword">begin</span></span><br><span class="line">	<span class="keyword">if</span> (o_ready)</span><br><span class="line">		r_data &lt;= i_data;</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-3-3-低功耗"><a href="#3-3-3-低功耗" class="headerlink" title="3.3.3 低功耗"></a>3.3.3 低功耗</h3><p>如果要在这里加上 low_power 的设定，那么需要保证： <code>r_data</code> should be zero whenever <code>r_valid</code> is false.</p>
+<ul>
+<li><strong>需要实现的行为逻辑（SV伪代码）：</strong></li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	!r_valid |-&gt; r_data == <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li><p>当 <strong>LOWPOERT</strong> set ，在下面的两种情况都需要将 r_data 置0：</p>
+<ul>
+<li>重置：</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">initial</span>	r_data = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line"><span class="keyword">if</span> (OPT_LOWPOWER &amp;&amp; i_reset)</span><br><span class="line">	r_data &lt;= <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>outgoing side <em>isn’t</em> stalled：<ul>
+<li>首先，如果 i_ready&#x3D;&#x3D;1， 那么 r_data 就算本周期存在，下一周期也会被输出；</li>
+<li>其次，如果本周期 o_valid &#x3D;&#x3D; 0 ，本buffer输出口无有效信号，下一周期会先补充 o_data 信号而不是去缓存，所以缓存数据也必定会拉低</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (OPT_LOWPOWER &amp;&amp; (!o_valid || i_ready))</span><br><span class="line">	r_data &lt;= <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>每次都将 r_data &lt;&#x3D; i_data: 很显然如果 o_ready &#x3D;&#x3D; 1，在没有设置低功耗的情况下（OPT_LOWPOWER &#x3D;&#x3D; 0 ），每次都会将左侧输入数据读入 buffer 进行存储。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//情况1: i_valid 有效。将 i_data copy 进入 r_data</span></span><br><span class="line"><span class="comment">//情况2: i_valid 无效。没有设置lowpower低功耗，每次都会将 i_data copy 进入 r_data</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> ((!OPT_LOWPOWER || i_valid) &amp;&amp; o_ready)</span><br><span class="line">		r_data &lt;= i_data;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>**<font color="red">但是这种做法是十分错误的。</font>**我们在 <code>opt_lowpoer</code> 模式下按照上述操作，会寄存输出信号 o_data &lt;&#x3D; i_data  、 r_data &lt;&#x3D; i_data 。</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//当如下情况发生时，将 i_data 送入 r_data：</span></span><br><span class="line"><span class="comment">// 1. i_valid 有效；</span></span><br><span class="line"><span class="comment">// 2. OPT_LOWPOWER == 1 ，设置 有 低功耗；</span></span><br><span class="line"><span class="comment">// 3. OPT_OUTREG   == 1 ，设置 有 输出缓存；</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> ((!(OPT_LOWPOWER &amp;&amp; OPT_OUTREG) || i_valid) &amp;&amp; o_ready)</span><br><span class="line"></span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> ((!OPT_LOWPOWER || !OPT_OUTREG || i_valid) &amp;&amp; o_ready)</span><br><span class="line">		r_data &lt;= i_data;</span><br></pre></td></tr></table></figure>
+
+<p>这么写的结果展现为：当buffer此时接收 previous stage 的数据时，若发生下面的任何一件事都会缓存输入数据：1.未设置低功耗、2.右侧组合逻辑、3.上级数据有效；</p>
+</li>
+</ul>
+<h2 id="3-4-信号等价-in-skidbuffer"><a href="#3-4-信号等价-in-skidbuffer" class="headerlink" title="3.4 信号等价 in skidbuffer"></a>3.4 信号等价 in skidbuffer</h2><p>首先看看作者怎么说：</p>
+<p>There’s also <strong>one very profound key feature</strong> to a <a target="_blank" rel="noopener" href="https://zipcpu.com/blog/2017/08/14/strategies-for-pipelining.html">skid buffer</a> implementation that I missed for the first several years I used them: <strong>the output stall signal is given by the internal buffer’s valid signal.</strong> The two are signals completely equivalent. </p>
+<img src="https://zipcpu.com/img/skidbuffer/skidbuffer-example.svg" alt="img" style="zoom: 67%;" />
+
+<p>Ok, I’ll admit I didn’t believe it myself until I ran the <a target="_blank" rel="noopener" href="https://zipcpu.com/blog/2017/10/19/formal-intro.html">formal</a> proof, but that’s beside the point. In this case, since we are using <a target="_blank" rel="noopener" href="https://zipcpu.com/doc/axi-spec.pdf">AXI</a> READY&#x2F;VALID notation, this means that <strong>the outgoing READY (not stalled) signal is the opposite of our r_VALID signal.</strong></p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @(*)   o_ready = !r_valid;  <span class="comment">//注意这里 o_ready 是register</span></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>仔细思考一下之前的例子。</p>
+<ul>
+<li>在 A周期中，<ul>
+<li>buffer1 收到 i_data、i_valid ，并且被 buffer2告知 i_ready &#x3D;&#x3D; 0。</li>
+<li>这个时候他知道自己的 o_data 无法被下一级接受，并且这个时候输入流新的有效数据；</li>
+<li>buffer1会在周期B告诉 buffer0收不了新数据；</li>
+<li>buffer1会在周期A缓存该周期的 i_data数据；</li>
+</ul>
+</li>
+<li>在周期B中，<ul>
+<li>buffer0看见 i_ready &#x3D;&#x3D;0 ，buffer0 在周期B中的 o_data 被禁止送入 buffer1.</li>
+</ul>
+</li>
+</ul>
+<p><strong>很明显，周期A中，buffer1缓存i_data 的同时，拉低了 o_ready &#x3D;&#x3D; 0 、拉高了 r_data &#x3D;&#x3D; 1;</strong> </p>
+<h2 id="3-5-register-unregistered-buffer"><a href="#3-5-register-unregistered-buffer" class="headerlink" title="3.5 &#x3D;&#x3D;register | unregistered buffer&#x3D;&#x3D;"></a>3.5 &#x3D;&#x3D;register | unregistered buffer&#x3D;&#x3D;</h2><p>在该部分将分为两种情况： One section for the simpler case where the outgoing registers are not buffered, and another for the case where they are.</p>
+<p>可以查看：<a target="_blank" rel="noopener" href="https://jia.je/hardware/2021/01/26/skid-buffer/#%E7%BB%9F%E4%B8%80%E7%BA%A6%E5%AE%9A">它有两个参数，一个表示是否有额外的输出寄存器（outputReg），一个表示是否低功耗（lowPower</a>这段评价。作者的翻译是 <code>opt_outrage</code> 的选项是需不需要额外的输出。我自己花了一个图来加深印象：</p>
+<h3 id="1-unregistered-case-左R右C"><a href="#1-unregistered-case-左R右C" class="headerlink" title="1.  unregistered case :左R右C"></a>1.  unregistered case :左R右C</h3><ol>
+<li><strong>关于 o_valid ：</strong></li>
+</ol>
+<p>只要输入 i_valid 或者 r_valid 为 true ，那么对下一级的输出数据有效：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @(*) <span class="comment">//组合逻辑</span></span><br><span class="line">			o_valid = (i_valid || r_valid);</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><strong>关于o_data :</strong></li>
+</ol>
+<p>当存在缓存数据 r_data 的时候 o_data 输出缓存。若没有缓存则输出 i_data数据</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// NO  OPT_LOWPOWER </span></span><br><span class="line"><span class="keyword">always</span> @(*)</span><br><span class="line">		<span class="keyword">if</span> (r_valid)</span><br><span class="line">			o_data = r_data;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			o_data = i_data;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">* - 目的：保证未使用的数值(valid ==0)，不会使得 o_data 和r_data 进行数据切换，从而消耗供电。</span></span><br><span class="line"><span class="comment">*        如果总线信号有很高的扇出率，或者在FPGA上有很长的信号路径，这种多余的切换可能会特别成问题。</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* - 行为：如果o_data和r_data各自的*VALID信号也为低，则强制o_data和r_data为零。</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="comment">//OPT_LOWPOWER </span></span><br><span class="line"><span class="keyword">always</span> @(*) <span class="keyword">begin</span></span><br><span class="line">		<span class="keyword">if</span> (r_valid)</span><br><span class="line">			o_data = r_data;</span><br><span class="line">  	<span class="comment">// 如果 OPT_LOWPOWER == 0，不设置低功耗 ，无论是否有效，o_data 都会发生变化</span></span><br><span class="line">  	<span class="comment">// 如果 OPT_LOWPOWER == 1， 设置低功耗  ，只有有效数据才会改变 O_data ，否则输出为0</span></span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (!OPT_LOWPOWER || i_valid)</span><br><span class="line">			o_data = i_data;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			o_data = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-registered-case-："><a href="#2-registered-case-：" class="headerlink" title="2. registered case ："></a>2. registered case ：</h3><ol>
+<li>首先还是来看 o_valid信号怎么处理的：</li>
+</ol>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">begin</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">initial</span>	o_valid = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	<span class="keyword">if</span> (i_reset)</span><br><span class="line">		o_valid &lt;= <span class="number">0</span>;</span><br><span class="line">   <span class="keyword">else</span> <span class="keyword">if</span> (!o_valid || i_ready) <span class="comment">//参看 handshake 给 master 的建议有这么一条</span></span><br><span class="line">		o_valid &lt;= (i_valid || r_valid);</span><br></pre></td></tr></table></figure>
+
+<p>这里的变动 condition 有点难以理解。我再次阐述一下：</p>
+<ul>
+<li>首先如果 i_ready &#x3D;&#x3D;1，<ul>
+<li>若  o_valid &#x3D;&#x3D; 1 ，那么完成一次握手信号，下一个时钟周期的 valid 信号可以有效，可无效；</li>
+<li>若 o_valid &#x3D;&#x3D;  0 ，那么下一周期 valid 可以仍然无效，也可以有效；</li>
+</ul>
+</li>
+<li>如果 i_ready  &#x3D;&#x3D; 0 ，<ul>
+<li>若 o_valid &#x3D;&#x3D; 0 ，那么下一周期 valid 可以仍然无效，也可以有效；</li>
+<li>若  o_valid &#x3D;&#x3D; 1 ，数据有效，但是没有ready进行握手，valid信号和相关数据需要一直保持；</li>
+</ul>
+</li>
+</ul>
+<p>其实是使用了 De Morgan’s laws ，此时的 <code>if (!o_valid || i_ready)</code>可以翻译为 <code>if (!(o_valid &amp;&amp; !i_ready))</code>。这么一下就只有 <strong>valid before ready condition</strong> 不能改变！！</p>
+<p>再次推荐看<a target="_blank" rel="noopener" href="https://zipcpu.com/formal/2019/04/16/axi-mistakes.html">The most common AXI mistake！！！！</a></p>
+<ol start="2">
+<li>再来看 o_valid 是如何处理的：</li>
+</ol>
+<p>We start with resetting <code>o_data</code> anytime <code>OPT_LOWPOWER</code> is set, and then we refuse any further logic if the output is stalled.</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">initial</span>	o_data = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk) </span><br><span class="line">		<span class="keyword">if</span> (OPT_LOWPOWER &amp;&amp; i_reset)</span><br><span class="line">			o_data &lt;= <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (!o_valid || i_ready)</span><br><span class="line">		<span class="keyword">begin</span></span><br></pre></td></tr></table></figure>
+
+<p>这种情况面临的情况可以参考 <code>stage[2]</code>，通过判断<code>buffer</code>内是否有 <code>r_valid</code> 又分为两类：<br><strong>stage[2] 类型1：</strong></p>
+<p><img src="https://zipcpu.com/img/pipeline-blocks-dbl-4.svg" alt="Block diagram of a 4-stage pipeline using a buffered handshake.  Sequence #4--initial stall clears"></p>
+<p><strong>stage[2] 类型2：</strong></p>
+<p><img src="https://zipcpu.com/img/pipeline-blocks-dbl-5.svg" alt="Block diagram of a 4-stage pipeline using a buffered handshake.  Sequence #5--Continues to clear"></p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">		<span class="keyword">if</span> (r_valid) <span class="comment">// 类型1</span></span><br><span class="line">			o_data &lt;= r_data;</span><br><span class="line">		<span class="comment">//类型2 ：</span></span><br><span class="line">		<span class="comment">// 未设置 lowpower 或者数据有效</span></span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (!OPT_LOWPOWER || i_valid)</span><br><span class="line">			o_data &lt;= i_data;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">       <span class="comment">// 设置了 lowpower ，且 i_valid 数据无效</span></span><br><span class="line">			o_data &lt;= <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">endgenerate</span></span><br></pre></td></tr></table></figure>
+
+<p>在结束本主题之前，请注意如何使用OPT_LOWPOWER的关键特性:</p>
+<ul>
+<li><p>如果没有设置它，那么所有的OPT_LOWPOWER逻辑(保存初始语句)就会消失。由于OPT_LOWPOWER是一个常量，如果OPT_LOWPOWER被清除，合成器可以处理优化这个逻辑。</p>
+</li>
+<li><p>OPT_OUTREG基本上也是如此，但是这个信号还有更多的事情要做。</p>
+</li>
+</ul>
+<p>这就是实现防滑缓冲的全部内容。正如您所看到的，逻辑非常简单，实际上只有两个内部寄存器与它相关联:r_valid和r_data。如果输出也被 <code>register</code>，那么<code>o_valid</code>和<code>o_data</code>也将被<code>register</code>。</p>
+<h1 id="4-Formal-Verification"><a href="#4-Formal-Verification" class="headerlink" title="4.  Formal Verification"></a>4.  <a target="_blank" rel="noopener" href="https://zipcpu.com/blog/2017/10/19/formal-intro.html">Formal Verification</a></h1><p>详细的formal method 可以参考这里：<a target="_blank" rel="noopener" href="https://zipcpu.com/blog/2017/10/19/formal-intro.html">My first experience with Formal Methods </a></p>
+<h2 id="4-1-reset"><a href="#4-1-reset" class="headerlink" title="4.1 reset"></a>4.1 reset</h2><p>在复位的时候  <code>reset == 1</code> 需要将 i_valid 拉低。代码如下：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">ifdef</span>	FORMAL</span></span><br><span class="line">	<span class="comment">// Reset properties</span></span><br><span class="line">	<span class="keyword">property</span> RESET_CLEARS_IVALID;</span><br><span class="line">		@(<span class="keyword">posedge</span> i_clk) i_reset |=&gt; !i_valid;</span><br><span class="line">	<span class="keyword">endproperty</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="4-2-xVALID-xREADY"><a href="#4-2-xVALID-xREADY" class="headerlink" title="4.2   !xVALID || xREADY"></a>4.2   !xVALID || xREADY</h2><p><strong>输入端口的 valid before ready 的握手</strong></p>
+<ul>
+<li>首先如果 i_ready &#x3D;&#x3D;1，<ul>
+<li>若  o_valid &#x3D;&#x3D; 1 ，那么完成一次握手信号，下一个时钟周期的 valid 信号可以有效，可无效；</li>
+<li>若 o_valid &#x3D;&#x3D;  0 ，那么下一周期 valid 可以仍然无效，也可以有效；</li>
+</ul>
+</li>
+<li>如果 i_ready  &#x3D;&#x3D; 0 ，<ul>
+<li>若 o_valid &#x3D;&#x3D; 0 ，那么下一周期 valid 可以仍然无效，也可以有效；</li>
+<li>若  o_valid &#x3D;&#x3D; 1 ，数据有效，但是没有ready进行握手，valid信号和相关数据需要一直保持；</li>
+</ul>
+</li>
+</ul>
+<p>代码如下：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这段代码检验 ivalid 的变化情况：</span></span><br><span class="line"><span class="keyword">property</span> IDATA_HELD_WHEN_NOT_READY;</span><br><span class="line">	@(<span class="keyword">posedge</span> i_clk) <span class="keyword">disable</span> <span class="keyword">iff</span> (i_reset)</span><br><span class="line">   <span class="comment">// ivalid == 1 不变</span></span><br><span class="line">   <span class="comment">// i_data 保持不变</span></span><br><span class="line">	i_valid &amp;&amp; !o_ready |=&gt; i_valid &amp;&amp; <span class="built_in">$stable</span>(i_data);</span><br><span class="line"><span class="keyword">endproperty</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>下面是一些关于 disable iff 的使用方式：</p>
+<p>在 SystemVerilog 中，<code>disable iff</code> 是一个关键字，用于在某些条件下禁用断言（assertion）或假设（assumption）。<code>disable iff</code> 后面跟着一个表达式，当该表达式的值为真时，断言或假设将被禁用</p>
+<p>例如，在下面的代码中：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">property</span> IDATA_HELD_WHEN_NOT_READY;</span><br><span class="line">    @(<span class="keyword">posedge</span> i_clk) <span class="keyword">disable</span> <span class="keyword">iff</span> (i_reset)</span><br><span class="line">    i_valid &amp;&amp; !o_ready |=&gt; i_valid &amp;&amp; <span class="built_in">$stable</span>(i_data);</span><br><span class="line"><span class="keyword">endproperty</span></span><br></pre></td></tr></table></figure>
+
+<p><code>disable iff (i_reset)</code> 表示当 <code>i_reset</code> 信号为真时，该属性将被禁用。这意味着当 <code>i_reset</code> 信号为真时，不会检查该属性是否满足</p>
+<h2 id="4-3-internal-and-output-signals"><a href="#4-3-internal-and-output-signals" class="headerlink" title="4.3 internal and output signals"></a>4.3 internal and output signals</h2><h3 id="1-Rule1"><a href="#1-Rule1" class="headerlink" title="1. #Rule1"></a>1. #Rule1</h3><p><strong>第一个规则针对：输出端口  握手协议。</strong></p>
+<p>The big rule we want to preserve is that any time there’s an outstanding request on the output port that’s stalled, i.e. <code>o_valid &amp;&amp; !i_ready</code>, then the request must remain the same on the next clock.</p>
+<p>任何情况下，可能出现输出 i_ready &#x3D;&#x3D; 0 的情况。一旦发生此类型，若 valid 信号为高，那么 valid 和 data信号都保持不变。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Rule #1:</span></span><br><span class="line"><span class="comment">//	Once o_valid goes high, the data cannot change until the</span></span><br><span class="line"><span class="comment">//	clock after i_ready</span></span><br><span class="line"><span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	<span class="keyword">disable</span> <span class="keyword">iff</span> (i_reset)</span><br><span class="line">   ( o_valid &amp;&amp; !i_ready   |=&gt;   (o_valid &amp;&amp; <span class="built_in">$stable</span>(o_data)));</span><br></pre></td></tr></table></figure>
+
+<p>The <code>disable iff (i_reset)</code> just means that we won’t check this test if the reset is ever high. </p>
+<h3 id="2-Rule2"><a href="#2-Rule2" class="headerlink" title="2. #Rule2"></a>2. #Rule2</h3><p><strong>规则2针对：没有数据丢失。</strong></p>
+<p>The second rule tries to capture the “no data shall be dropped” policy. Specifically, if there’s data on the incoming port, then it either needs to go to the output or it needs to be buffered.</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Rule #2:</span></span><br><span class="line"><span class="comment">//	All incoming data must either go directly to the</span></span><br><span class="line"><span class="comment">//	output port, or into the skid buffer</span></span><br><span class="line"><span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	<span class="keyword">disable</span> <span class="keyword">iff</span> (i_reset)</span><br><span class="line">    (i_valid &amp;&amp; o_ready &amp;&amp; </span><br><span class="line">    (!OPT_OUTREG || o_valid) &amp;&amp;  !i_ready)</span><br><span class="line">		    |=&gt; (r_valid &amp;&amp; r_data == <span class="built_in">$past</span>(i_data)));</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>i_valid &amp;&amp;  o_ready</code>  &#96; ：上一级发生握手；</li>
+<li><code>!i_ready</code> ：下一级数据 busy；</li>
+<li><code>(!OPT_OUTREG || o_valid)</code> ：<ul>
+<li>若 <code>OPT_OUTREG == 1</code>，<strong>有</strong> 寄存。<ul>
+<li><code>o_valid == 1</code> ，此时buffer内有o_data 数据等待pass to next stage。需要 r_data 缓存；</li>
+<li><code>o_valid == 0</code>，o_data 数据可以change</li>
+</ul>
+</li>
+<li>若 <code>OPT_OUTREG == 0</code>，<strong>无</strong> 寄存。<ul>
+<li><strong><font color="red">只要上级握手，下级阻塞，就必须 缓存？？？？？？？？？？？？？？？？？</font></strong></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>那么针对其他情况，我们需要考虑吗？</p>
+</blockquote>
+<p> if either <code>!i_valid</code> or <code>i_valid &amp;&amp; !o_ready</code>, then nothing happens on the input port that we need to worry about. </p>
+<p>Since <code>r_valid</code> is equivalent to <code>!o_ready</code>, we know that the only interesting case is the one in which <code>r_valid</code> is low. If <code>r_valid</code> is low and <code>i_ready</code> is high, the core is a simple pass through and a quick code inspection will prove that works. That leaves the case where <code>r_valid</code> is low and <code>i_ready</code> is also low–the case we covered above</p>
+<h3 id="3-Rule3"><a href="#3-Rule3" class="headerlink" title="3. #Rule3"></a>3. #Rule3</h3><p>主要目的或者功能：That checks both the rise and the fall of <code>o_valid</code>. Seems simple enough.</p>
+<p>any time <code>i_ready</code> is true on the outgoing interface then everything should be cleared. On the next clock, <code>o_valid</code> should only be true if <code>i_valid</code> is also true.</p>
+<p>任何周期1中，skidbuffer下级疏通，i_ready &#x3D;&#x3D; 1. 那么在下一周期（周期2）中，o_valid &#x3D;&#x3D; i_valid ，相当于valid的传递。</p>
+<p>感觉自己到这里还是没有理解 register 和 unregister 两个 mode 的区别。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Rule #3:</span></span><br><span class="line"><span class="comment">//	After the last transaction, o_valid should become idle</span></span><br><span class="line"><span class="keyword">generate</span> <span class="keyword">if</span> (!OPT_OUTREG)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">		<span class="keyword">disable</span> <span class="keyword">iff</span> (i_reset)</span><br><span class="line">		i_ready |=&gt; (o_valid == i_valid));</span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>上面的例子是 unregistered mode。如果是registerd mode 呢？<br>In that case two rules shall apply. </p>
+</blockquote>
+<ul>
+<li><p>First, any time an input is accepted, then <code>o_valid</code> should be high on the next clock.</p>
+<p>上一级发生了握手，下一周期对下一级的数据输出必须有效；</p>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">begin</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">		<span class="keyword">disable</span> <span class="keyword">iff</span> (i_reset)</span><br><span class="line">		i_valid &amp;&amp; o_ready |=&gt; o_valid);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>any time <code>i_ready</code> is true and there’s nothing on either the input or in the buffer, then <code>o_valid</code> should clear on the next clock.</p>
+<p>如果下级索取数据，但是buffer中并没有 r_data ，且 i_valid 和 i_data无效。那么 o_valid &#x3D;&#x3D; 0 on the next clock</p>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">	<span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">		<span class="keyword">disable</span> <span class="keyword">iff</span> (i_reset)</span><br><span class="line">		!i_valid &amp;&amp; !r_valid &amp;&amp; i_ready |=&gt; !o_valid);</span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">endgenerate</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="4-Rule4"><a href="#4-Rule4" class="headerlink" title="4. #Rule4"></a>4. #Rule4</h3><p>主要目的或者功能：测试r_valid 信号</p>
+<p> if <code>r_valid</code> is ever true while the outgoing port is <code>i_ready</code>, then the skid buffer gets copied to the outgoing port and <code>r_valid</code> must be deasserted on the next clock.</p>
+<p>当外部输入信号 i_ready &#x3D;&#x3D; 1 的时候， r_data 赋值进入 o_data ，r_valid 被拉低。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Rule #4</span></span><br><span class="line"><span class="comment">//	Same thing, but this time for r_valid</span></span><br><span class="line"><span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	r_valid &amp;&amp; i_ready |=&gt; !r_valid);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>因为  <code>o_ready = !r_valid</code>. Therefore if <code>r_valid</code> is high, the incoming interface is stalled and so we can ignore it. 当r_valid 有效时候，上级输出被阻塞，此时不需要考虑带输入 i_valid 和 i_data 。</p>
+<p>再插入一个，如果使用了 OPT_lowpoert 设置的电路，我们应该如何设置，</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">generate</span> <span class="keyword">if</span> (OPT_LOWPOWER)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// If OPT_LOWPOWER is set, o_data and r_data both need</span></span><br><span class="line">	<span class="comment">// to be zero any time !o_valid or !r_valid respectively</span></span><br><span class="line">	<span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">		!o_valid |-&gt; o_data == <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">		!r_valid |-&gt; r_data == <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// else</span></span><br><span class="line">	<span class="comment">//	if OPT_LOWPOWER isn&#x27;t set, we can lower our logic</span></span><br><span class="line">	<span class="comment">//	count by not forcing these values to zero.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">endgenerate</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="5-Cover-SVA"><a href="#5-Cover-SVA" class="headerlink" title="5. Cover (SVA)"></a>5. Cover (SVA)</h1><h2 id="5-1-skidbuffer-example-1"><a href="#5-1-skidbuffer-example-1" class="headerlink" title="5.1 skidbuffer example_1"></a>5.1 skidbuffer example_1</h2><p>cover 和之前的 assert、assume 最大的区别：Unlike the safety (assert&#x2F;assume) properties above which can be proved true if no trace can be found that makes an assert false while keeping all of the assumes true, cover only succeeds if at least one trace can be found. Cover is very useful for finding faults in your assumptions, <strong>proving that particular operations</strong> can take place and more.</p>
+<p>我们使用 assume 假设一种验证环境或者条件，该条件为真。同时使用 assert 来对错误轨迹进行警告false，如果assert没有发现错误也会给设计者一个假象：完全正确。</p>
+<p>这个时候使用 cover，cover至少找到一个相关的轨迹才会为真。</p>
+<p>下面给出一个cover代码：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">ifdef</span>	SKIDBUFFER</span></span><br><span class="line">	<span class="keyword">reg</span>	f_changed_data;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Cover test</span></span><br><span class="line">	<span class="keyword">cover</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">		<span class="keyword">disable</span> <span class="keyword">iff</span> (i_reset)</span><br><span class="line">		(!o_valid &amp;&amp; !i_valid)</span><br><span class="line">		##<span class="number">1</span> i_valid &amp;&amp;  i_ready [*<span class="number">3</span>]</span><br><span class="line">		##<span class="number">1</span> i_valid &amp;&amp; !i_ready</span><br><span class="line">		##<span class="number">1</span> i_valid &amp;&amp;  i_ready [*<span class="number">2</span>]</span><br><span class="line">		##<span class="number">1</span> i_valid &amp;&amp; !i_ready [*<span class="number">2</span>]</span><br><span class="line">		##<span class="number">1</span> i_valid &amp;&amp;  i_ready [*<span class="number">3</span>]</span><br><span class="line">                  </span><br><span class="line">		<span class="comment">// Wait for the design to clear</span></span><br><span class="line">		##<span class="number">1</span> o_valid &amp;&amp; i_ready [*<span class="number">0</span>:<span class="number">5</span>]</span><br><span class="line">		##<span class="number">1</span> (!o_valid &amp;&amp; !i_valid &amp;&amp; f_changed_data)</span><br><span class="line">                 );</span><br></pre></td></tr></table></figure>
+
+<p>这段代码是一个SystemVerilog中的cover property，它定义了一个覆盖率模型，用于验证设计。这段代码的意思是，在i_clk的上升沿时，如果i_reset为假，则检查以下条件：<code>!o_valid &amp;&amp; !i_valid ==1 </code></p>
+<p>得到的图片如下图所是：</p>
+<p><img src="/Users/xjy/Downloads/P_SKIDBUFFER/5_1.png"></p>
+<p>可以发现在时钟周期停止前的周期，i_valid 和 o_valid 同时等于0,这个时候象征着buffer内无有效数据，其输入的数据也无效，设置改cover的目的是为了观察该种情况的后续行为逻辑。</p>
+<ol>
+<li>在下一个时钟周期，i_valid为真且i_ready为真，重复3次</li>
+<li>在下一个时钟周期，i_valid为真且i_ready为假</li>
+<li>在下一个时钟周期，i_valid为真且i_ready为真，重复2次</li>
+<li>在下一个时钟周期，i_valid为真且i_ready为假，重复2次</li>
+<li>在下一个时钟周期，i_valid为真且i_ready为真，重复3次</li>
+<li>等待设计清除，在下一个时钟周期，o_valid为真且i_ready在0到5个时钟周期内都为真</li>
+<li>在下一个时钟周期，<code>!o_valid &amp;&amp; !i_valid &amp;&amp; f_changed_data</code></li>
+</ol>
+<h2 id="5-2-追踪信号"><a href="#5-2-追踪信号" class="headerlink" title="5.2 追踪信号"></a>5.2 追踪信号</h2><p>要做到这一点，最简单的方法是添加另一个寄存器，以及与之相关的一些逻辑。让我们将其命名为<code>f_changed_data</code>，并使用它来指示我们的数据在整个覆盖跟踪过程中“正确”地更改。也就是说，<code>f_changed_data</code> 将捕获传入的数据计数是否增加——这样我们就可以更容易地看到跟踪和正在发生的事情。</p>
+<p><strong><font color="red">其实在上述仿真的过程中你也发现问题了：在cover中你甚至可以更改 o_valid 的数值！！！</font></strong></p>
+<p>我们首先将f_changed_data标志设置为true，如果我们希望看到的cover语句中的任何规则发生变化，则清除该标志。（<font color="red">我对这句话完全不理解！！！！！啊啊啊啊</font>）下面👇看代码：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//首先设置这个寄存器的初始值,该寄存器在复位的的时候被拉高了</span></span><br><span class="line"><span class="keyword">initial</span>	f_changed_data = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line"><span class="keyword">if</span> (i_reset)</span><br><span class="line">	f_changed_data &lt;= <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<p>如果不复位：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 	condition:</span></span><br><span class="line"><span class="comment">*		1. i_valid == 1 :	本周期的输入数据有效	</span></span><br><span class="line"><span class="comment">*  	2. $past(!i_valid || o_ready) == 1 : </span></span><br><span class="line"><span class="comment">* 			2.1 $past(o_ready) == 1 </span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (i_valid &amp;&amp; <span class="built_in">$past</span>(!i_valid || o_ready))</span><br><span class="line">	<span class="keyword">begin</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1 id="6-skidbuffer-代码解读"><a href="#6-skidbuffer-代码解读" class="headerlink" title="6. skidbuffer_代码解读"></a>6. <a target="_blank" rel="noopener" href="https://github.com/ZipCPU/wb2axip/blob/master/rtl/skidbuffer.v">skidbuffer_代码解读</a></h1><h2 id="6-1-目的和参数介绍"><a href="#6-1-目的和参数介绍" class="headerlink" title="6.1 目的和参数介绍"></a>6.1 目的和参数介绍</h2><p>目的：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Purpose:	A basic SKID buffer.</span></span><br><span class="line"><span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line"><span class="comment">//	Skid buffers are required for high throughput AXI code, since the AXI</span></span><br><span class="line"><span class="comment">//	specification requires that all outputs be registered.  This means</span></span><br><span class="line"><span class="comment">//	that, if there are any stall conditions calculated, it will take a clock</span></span><br><span class="line"><span class="comment">//	cycle before the stall can be propagated up stream.  This means that</span></span><br><span class="line"><span class="comment">//	the data will need to be buffered for a cycle until the stall signal</span></span><br><span class="line"><span class="comment">//	can make it to the output.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	Handling that buffer is the purpose of this core.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	On one end of this core, you have the i_valid and i_data inputs to</span></span><br><span class="line"><span class="comment">//	connect to your bus interface.  There&#x27;s also a registered o_ready</span></span><br><span class="line"><span class="comment">//	signal to signal stalls for the bus interface.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	The other end of the core has the same basic interface, but it isn&#x27;t</span></span><br><span class="line"><span class="comment">//	registered.  This allows you to interact with the bus interfaces</span></span><br><span class="line"><span class="comment">//	as though they were combinatorial logic, by interacting with this half</span></span><br><span class="line"><span class="comment">//	of the core.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	If at any time the incoming !stall signal, i_ready, signals a stall,</span></span><br><span class="line"><span class="comment">//	the incoming data is placed into a buffer.  Internally, that buffer</span></span><br><span class="line"><span class="comment">//	is held in r_data with the r_valid flag used to indicate that valid</span></span><br><span class="line"><span class="comment">//	data is within it.</span></span><br><span class="line"><span class="comment">// &#125;&#125;&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>参数：</p>
+<ul>
+<li><strong>OPT_LOWPOWER</strong> ：<ul>
+<li>目的：保证未使用的数值(valid &#x3D;&#x3D;0)，不会使得 o_data 和r_data 进行数据切换，从而消耗供电。如果总线信号有很高的扇出率，或者在FPGA上有很长的信号路径，这种多余的切换可能会特别成问题。</li>
+<li>行为：如果o_data和r_data各自的*VALID信号也为低，则强制o_data和r_data为零。</li>
+<li>缺点：消耗额外逻辑。</li>
+</ul>
+</li>
+<li><strong>OPT_OUTREG</strong> ：<ul>
+<li>导致输出被寄存；</li>
+<li>为什么会有 register 和 unregister 的区别？<ul>
+<li>暂时只看积存的，无寄存的不知道使用环境理解不了。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>OPT_PASSTHROUGH</strong>：<ul>
+<li>skidbuffer 处于一个 passthrough 通路状态。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Parameters:</span></span><br><span class="line"><span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line"><span class="comment">//	DW or data width</span></span><br><span class="line"><span class="comment">//		In order to make this core generic, the width of the data in the</span></span><br><span class="line"><span class="comment">//		skid buffer is parameterized</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	OPT_LOWPOWER</span></span><br><span class="line"><span class="comment">//		Forces both o_data and r_data to zero if the respective *VALID</span></span><br><span class="line"><span class="comment">//		signal is also low.  While this costs extra logic, it can also</span></span><br><span class="line"><span class="comment">//		be used to guarantee that any unused values aren&#x27;t toggling and</span></span><br><span class="line"><span class="comment">//		therefore unnecessarily using power.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//		This excess toggling can be particularly problematic if the</span></span><br><span class="line"><span class="comment">//		bus signals have a high fanout rate, or a long signal path</span></span><br><span class="line"><span class="comment">//		across an FPGA.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	OPT_OUTREG</span></span><br><span class="line"><span class="comment">//		Causes the outputs to be registered</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	OPT_PASSTHROUGH</span></span><br><span class="line"><span class="comment">//		Turns the skid buffer into a passthrough.  Used for formal</span></span><br><span class="line"><span class="comment">//		verification only.</span></span><br><span class="line"><span class="comment">// &#125;&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="6-2-Code-Design"><a href="#6-2-Code-Design" class="headerlink" title="6.2 Code Design"></a>6.2 Code Design</h2><p>&#x3D;&#x3D;<em>Interface signal</em>&#x3D;&#x3D;</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> skidbuffer #(</span><br><span class="line">		<span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line">		<span class="keyword">parameter</span>	[<span class="number">0</span>:<span class="number">0</span>]	OPT_LOWPOWER = <span class="number">0</span>,</span><br><span class="line">		<span class="keyword">parameter</span>	[<span class="number">0</span>:<span class="number">0</span>]	OPT_OUTREG = <span class="number">1</span>,</span><br><span class="line">		<span class="comment">//</span></span><br><span class="line">		<span class="keyword">parameter</span>	[<span class="number">0</span>:<span class="number">0</span>]	OPT_PASSTHROUGH = <span class="number">0</span>,</span><br><span class="line">		<span class="keyword">parameter</span>		DW = <span class="number">8</span>,</span><br><span class="line">		<span class="keyword">parameter</span>	[<span class="number">0</span>:<span class="number">0</span>]	OPT_INITIAL = <span class="number">1&#x27;b1</span></span><br><span class="line">		<span class="comment">// &#125;&#125;&#125;</span></span><br><span class="line">	) (</span><br><span class="line">		<span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line">		<span class="keyword">input</span>	<span class="keyword">wire</span>			i_clk, i_reset,</span><br><span class="line">  </span><br><span class="line">		<span class="keyword">input</span>		<span class="keyword">wire</span>						i_valid,</span><br><span class="line">		<span class="keyword">output</span>	<span class="keyword">wire</span>						o_ready,</span><br><span class="line">		<span class="keyword">input</span>		<span class="keyword">wire</span>	[DW-<span class="number">1</span>:<span class="number">0</span>]	i_data,</span><br><span class="line">  </span><br><span class="line">		<span class="keyword">output</span>	<span class="keyword">wire</span>						o_valid,</span><br><span class="line">		<span class="keyword">input</span>		<span class="keyword">wire</span>						i_ready,</span><br><span class="line">		<span class="keyword">output</span>	<span class="keyword">reg</span>		[DW-<span class="number">1</span>:<span class="number">0</span>]	o_data</span><br><span class="line">		<span class="comment">// &#125;&#125;&#125;</span></span><br><span class="line">	);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">wire</span>	[DW-<span class="number">1</span>:<span class="number">0</span>]	w_data;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="6-2-1-r-valid"><a href="#6-2-1-r-valid" class="headerlink" title="6.2.1  r_valid"></a>6.2.1  r_valid</h3><ul>
+<li><code>i_valid &amp;&amp; o_ready</code> ：previous stage send valid_data ，cunrrent can accept data；</li>
+<li><code>o_valid &amp;&amp; !i_ready</code>：there is a valid data in current stage ,but it can not be sent to next stage.</li>
+<li>结果：自身的有效数据没法传送，又来一个有效数据，只能存储；</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">begin</span> : LOGIC</span><br><span class="line">	<span class="comment">// We&#x27;ll start with skid buffer itself</span></span><br><span class="line">	<span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line">   </span><br><span class="line">   <span class="comment">//两个缓存寄存器</span></span><br><span class="line">	<span class="keyword">reg</span>			r_valid;</span><br><span class="line">	<span class="keyword">reg</span>	[DW-<span class="number">1</span>:<span class="number">0</span>]	r_data;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// r_valid</span></span><br><span class="line">	<span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line">	<span class="keyword">initial</span> <span class="keyword">if</span> (OPT_INITIAL) r_valid = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	<span class="keyword">if</span> (i_reset)</span><br><span class="line">		r_valid &lt;= <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> ((i_valid &amp;&amp; o_ready) &amp;&amp; (o_valid &amp;&amp; !i_ready))</span><br><span class="line">		<span class="comment">// We have incoming data, but the output is stalled</span></span><br><span class="line">		r_valid &lt;= <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (i_ready)</span><br><span class="line">		r_valid &lt;= <span class="number">0</span>;</span><br><span class="line">	<span class="comment">// &#125;&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="6-2-2-r-data"><a href="#6-2-2-r-data" class="headerlink" title="6.2.2 r_data"></a>6.2.2 r_data</h3><ul>
+<li>如果设置低功耗<code>opt_lowpower (opt_lowpower == 1)</code> ， <ul>
+<li><code>reset</code> 拉高可以复位；</li>
+<li><code>(!o_valid || i_ready)</code> : <code>valid before ready</code> 握手类型，缓存数据 <code>r_data</code> 复位：<code>r_data &lt;= 0</code>;</li>
+</ul>
+</li>
+<li>使用德摩根定律可以翻译<ul>
+<li><code>(!OPT_LOWPOWER || !OPT_OUTREG || i_valid)</code>  &#x3D;&#x3D;  <code>!( OPT_LOWPOWER   &amp;&amp;   OPT_OUTREG   &amp;&amp;  !i_valid )</code></li>
+<li>握手 ：  <code>i_valid   &amp;&amp;  o_ready</code>；</li>
+<li>无低功耗： <code>OPT_LOWPOWER  == 0</code> ；</li>
+<li>无寄存 ： <code>OPT_OUTREG   == 0</code> ；</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// r_data</span></span><br><span class="line"><span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line"><span class="keyword">initial</span> <span class="keyword">if</span> (OPT_INITIAL) r_data = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line"><span class="keyword">if</span> (OPT_LOWPOWER &amp;&amp; i_reset)</span><br><span class="line">	r_data &lt;= <span class="number">0</span>;</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (OPT_LOWPOWER &amp;&amp; (!o_valid || i_ready))</span><br><span class="line">	r_data &lt;= <span class="number">0</span>;</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> ((!OPT_LOWPOWER || !OPT_OUTREG || i_valid) &amp;&amp; o_ready)</span><br><span class="line">	r_data &lt;= i_data;</span><br><span class="line"></span><br><span class="line"><span class="keyword">assign</span>	w_data = r_data;</span><br><span class="line"><span class="comment">// &#125;&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="6-2-3-o-ready"><a href="#6-2-3-o-ready" class="headerlink" title="6.2.3 o_ready"></a>6.2.3 o_ready</h3><p>一个凑巧的信息关系。不过我很诧异左侧信号 o_ready 是一个 wire 类型的信号；</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// o_ready</span></span><br><span class="line"><span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line"><span class="keyword">assign</span> o_ready = !r_valid;</span><br><span class="line"><span class="comment">// &#125;&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="6-2-4-net-output"><a href="#6-2-4-net-output" class="headerlink" title="6.2.4 net_output"></a>6.2.4 net_output</h3><h4 id="o-valid-有效信号控制："><a href="#o-valid-有效信号控制：" class="headerlink" title="o_valid 有效信号控制："></a><strong>o_valid 有效信号控制</strong>：</h4><ul>
+<li>不需要 <code>valid before ready</code> ： wire 类型的 o_data 不需要 valid before ready 这个限制条件；<ul>
+<li>有效数据 <code>o_valid</code> 直接来源于  <code>(i_valid || r_valid)</code>;</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// And then move on to the output port</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="keyword">if</span> (!OPT_OUTREG)</span><br><span class="line"><span class="keyword">begin</span> : NET_OUTPUT</span><br><span class="line">	<span class="comment">// Outputs are combinatorially determined from inputs</span></span><br><span class="line">	<span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line">	<span class="comment">// o_valid</span></span><br><span class="line">	<span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line">	<span class="keyword">assign</span>	o_valid = !i_reset &amp;&amp; (i_valid || r_valid);</span><br><span class="line">	<span class="comment">// &#125;&#125;&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="o-data-数据的控制："><a href="#o-data-数据的控制：" class="headerlink" title="o_data 数据的控制："></a><strong>o_data 数据的控制</strong>：</h4><ul>
+<li>不需要 <code>valid before ready</code> ： wire 类型的 o_data 不需要 valid before ready 这个限制条件；</li>
+<li><code>(r_valid)</code> ：如果有缓存数据，o_data 直接取出 r_data;</li>
+<li>若没有 <code>(r_valid)</code> 缓存：<ul>
+<li>若设置了低功耗  <code>OPT_LOWPOWER ==1</code> ：<code>o_data</code> 由 <code>i_valid</code> 控制 <ul>
+<li><code>i_valid == 1</code> ： previous stage 的数据<strong>有效</strong>，  <code>o_data &lt;= i_data</code> ; </li>
+<li><code>i_valid == 0</code> ： previous stage 的数据<strong>无效</strong>，  <code>o_data &lt;= 0</code> ;</li>
+</ul>
+</li>
+<li>若没有设置低功耗  <code>OPT_LOWPOWER == 0</code> ：<code>o_data</code> 随着 <code>i_data</code> 一直变化； 并且该变化是及时的，没有时钟周期延时；</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// o_data</span></span><br><span class="line"><span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line"><span class="keyword">always</span> @(*)</span><br><span class="line"><span class="keyword">if</span> (r_valid)</span><br><span class="line">	o_data = r_data;</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (!OPT_LOWPOWER || i_valid)</span><br><span class="line">	o_data = i_data;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">	o_data = <span class="number">0</span>;</span><br><span class="line"><span class="comment">// &#125;&#125;&#125;</span></span><br><span class="line"><span class="comment">// &#125;&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+<h3 id="6-2-5-reg-output"><a href="#6-2-5-reg-output" class="headerlink" title="6.2.5 reg_output"></a>6.2.5 reg_output</h3><h4 id="o-valid-有效信号控制：-1"><a href="#o-valid-有效信号控制：-1" class="headerlink" title="o_valid 有效信号控制："></a><strong>o_valid 有效信号控制</strong>：</h4><ul>
+<li><code>(!o_valid || i_ready)</code>： o_valid 变化条件， valid before ready ；<ul>
+<li><code>(i_valid || r_valid)</code> ：有效信号来自于 previous stage 或者 buffer 的 valid 信号 ；</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">begin</span> : REG_OUTPUT</span><br><span class="line">	<span class="comment">// Register our outputs</span></span><br><span class="line">	<span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line">	<span class="comment">// o_valid</span></span><br><span class="line">	<span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line">	<span class="keyword">reg</span>	ro_valid;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">initial</span> <span class="keyword">if</span> (OPT_INITIAL) ro_valid = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">	<span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	<span class="keyword">if</span> (i_reset)</span><br><span class="line">		ro_valid &lt;= <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (!o_valid || i_ready)</span><br><span class="line">		ro_valid &lt;= (i_valid || r_valid);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">assign</span>	o_valid = ro_valid;</span><br><span class="line">	<span class="comment">// &#125;&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="o-data-数据的控制：-1"><a href="#o-data-数据的控制：-1" class="headerlink" title="o_data 数据的控制："></a><strong>o_data 数据的控制</strong>：</h4><ul>
+<li><p><code>(OPT_LOWPOWER &amp;&amp; i_reset)</code>  ：只有在设置了  <code>OPT_LOWPOWER  == 1</code> 之后， i_reset =&#x3D;1 拉高的时候，输出o_data=&#x3D;0 低功耗；</p>
+</li>
+<li><p><code>(!o_valid || i_ready)</code>： o_valid 变化条件， valid before ready ；</p>
+<ul>
+<li><code>(r_valid)</code> ：如果存在缓存， <code>o_data</code> 由缓存 <code>r_data</code> 输出；</li>
+<li>若设置了低功耗  <code>OPT_LOWPOWER ==1</code> ：<code>o_data</code> 由 <code>i_valid</code> 控制 <ul>
+<li><code>i_valid == 1</code> ： previous stage 的数据<strong>有效</strong>，  <code>o_data &lt;= i_data</code> ; </li>
+<li><code>i_valid == 0</code> ： previous stage 的数据<strong>无效</strong>，  <code>o_data &lt;= 0</code> ;</li>
+</ul>
+</li>
+<li>若没有设置低功耗  <code>OPT_LOWPOWER == 0</code> ：<code>o_data</code> 随着 <code>i_data</code> 一直变化；</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">		<span class="comment">// o_data</span></span><br><span class="line">		<span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line">		<span class="keyword">initial</span> <span class="keyword">if</span> (OPT_INITIAL) o_data = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">		<span class="keyword">if</span> (OPT_LOWPOWER &amp;&amp; i_reset)</span><br><span class="line">			o_data &lt;= <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (!o_valid || i_ready)</span><br><span class="line">		<span class="keyword">begin</span></span><br><span class="line">			<span class="keyword">if</span> (r_valid)</span><br><span class="line">				o_data &lt;= r_data;</span><br><span class="line">			<span class="keyword">else</span> <span class="keyword">if</span> (!OPT_LOWPOWER || i_valid)</span><br><span class="line">				o_data &lt;= i_data;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				o_data &lt;= <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">end</span></span><br><span class="line">		<span class="comment">// &#125;&#125;&#125;</span></span><br><span class="line"></span><br><span class="line">		<span class="comment">// &#125;&#125;&#125;</span></span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line">	<span class="comment">// &#125;&#125;&#125;</span></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">endgenerate</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="6-3-Formal-properties（一些性质）"><a href="#6-3-Formal-properties（一些性质）" class="headerlink" title="6.3 Formal properties（一些性质）"></a>6.3 Formal properties（一些性质）</h2><p>首先介绍这部分代码的组织架构：</p>
+<ul>
+<li>决定使用 assume 还是 assert</li>
+<li>中间信号</li>
+<li>Incoming stream properties &#x2F; assumptions </li>
+<li>Outgoing stream properties &#x2F; assumptions</li>
+<li>Other properties<ul>
+<li>这里就涉及到了之前的 rule1 、 rule2 、 rule3 、rule4</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-assume-or-assert"><a href="#1-assume-or-assert" class="headerlink" title="1. assume or assert"></a>1. assume or assert</h3><p>通过定义 SKIDBUFFER 决定使用 assume 或者 assert。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">ifdef</span>	SKIDBUFFER</span></span><br><span class="line"><span class="meta">`<span class="keyword">define</span>	ASSUME	assume</span></span><br><span class="line"><span class="meta">`<span class="keyword">else</span></span></span><br><span class="line"><span class="meta">`<span class="keyword">define</span>	ASSUME	assert</span></span><br><span class="line"><span class="meta">`<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-check-reset"><a href="#2-check-reset" class="headerlink" title="2. check reset"></a>2. check reset</h3><p>首先定义了一个寄存器 <code>f_past_valid</code> 。</p>
+<p>在第一周期之前改寄存器的数值为0，在第一个周期上升沿后 <code>f_past_valid</code>  被拉高。在后续过程中会一直 不会check i_reaset ，但是在第一周期前必须保证 i_reset 被拉高保持复位；</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">reg</span>	f_past_valid;</span><br><span class="line"></span><br><span class="line"><span class="keyword">initial</span>	f_past_valid = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	f_past_valid &lt;= <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">always</span> @(*)</span><br><span class="line"><span class="keyword">if</span> (!f_past_valid)</span><br><span class="line">	<span class="keyword">assume</span>(i_reset);</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-Incoming-Properties-266-290"><a href="#3-Incoming-Properties-266-290" class="headerlink" title="3. Incoming Properties(266-290)"></a>3. Incoming Properties(266-290)</h3><h4 id="1-复位前-不复位"><a href="#1-复位前-不复位" class="headerlink" title="1. 复位前 &amp; 不复位"></a>1. 复位前 &amp; 不复位</h4><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line"><span class="keyword">if</span> (!f_past_valid)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">	`ASSUME(!i_valid || !OPT_INITIAL);</span><br><span class="line"><span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">$past</span>(i_valid &amp;&amp; !o_ready &amp;&amp; !i_reset) &amp;&amp; !i_reset)</span><br><span class="line">	`ASSUME(i_valid &amp;&amp; <span class="built_in">$stable</span>(i_data));</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>(!f_past_valid)</code> ： 复位状态下的信号检测。</p>
+<ul>
+<li><code>!OPT_INITIAL</code> ： <code>!OPT_INITIAL == 1</code> 没有初始化，不关心 <code>i_valid</code>；</li>
+<li><code>OPT_INITIAL</code>：<code>OPT_INITIAL == 1</code>  初始化，<code>i_valid</code> 在复位状态必须等于<code>0</code>；</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>中途打断一下，这段代码看起来理解确实有点困难，或者条件语句太难理解了。这个时候转换一下思路，看看operation语句： &#96;&#96;ASSUME(i_valid &amp;&amp; $stable(i_data));&#96;</p>
+<p>operation check 为真必须保证：</p>
+<ul>
+<li><code>i_valid == 1</code> ： 外部输入信号有效；</li>
+<li><code>$stable(i_data)</code> ：外部输入数据保持稳定；</li>
+</ul>
+<p>是不是感觉很熟悉，输入接口的 valid before ready 握手行为， valid信号拉高后必须等待ready握手！</p>
+</blockquote>
+<p><code>(f_past_valid)</code> + <code>($past(i_valid &amp;&amp; !o_ready &amp;&amp; !i_reset) &amp;&amp; !i_reset)</code>： 未复位状态下的信号检测。</p>
+<ul>
+<li><code>!i_reset</code>：要求 <code>i_reset == 0</code> ，电路保持正常工作状态；</li>
+<li><code>$past( )</code> 中：<ul>
+<li><code>!i_reset</code> ：首先假设<code>(i_valid &amp;&amp; !o_ready)</code> 为ture<ul>
+<li>复位前一丢丢时间：  <code>!i_reset == 0</code>；</li>
+<li>复位后一丢丢时间：  <code>!i_reset == 1</code>；</li>
+<li>所以在复位前后的时钟周围，我们不进行信号有效检测；</li>
+</ul>
+</li>
+<li><code>i_valid &amp;&amp; !o_ready</code>：熟悉的 valid before ready 握手<ul>
+<li>i_valid 信号不改变；</li>
+<li>i_data 数据不改变；</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="2-input-reset-过程"><a href="#2-input-reset-过程" class="headerlink" title="2. input reset 过程"></a>2. input reset 过程</h4><ul>
+<li><code>RESET_CLEARS_IVALID</code> ：复位时，输入数据有效信号i_valid必须归0</li>
+<li><code>IDATA_HELD_WHEN_NOT_READY</code> ：<strong>valid before ready</strong>  handshake dependency ！</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">ifdef</span>	VERIFIC</span></span><br><span class="line">    <span class="meta">`<span class="keyword">define</span>	FORMAL_VERIFIC</span></span><br><span class="line">      <span class="comment">// Reset properties</span></span><br><span class="line">      <span class="keyword">property</span> RESET_CLEARS_IVALID;</span><br><span class="line">        @(<span class="keyword">posedge</span> i_clk) i_reset |=&gt; !i_valid;<span class="comment">// 复位时，输入数据有效信号i_valid必须归0</span></span><br><span class="line">      <span class="keyword">endproperty</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">property</span> IDATA_HELD_WHEN_NOT_READY;</span><br><span class="line">        @(<span class="keyword">posedge</span> i_clk) <span class="keyword">disable</span> <span class="keyword">iff</span> (i_reset)</span><br><span class="line">        i_valid &amp;&amp; !o_ready |=&gt; i_valid &amp;&amp; <span class="built_in">$stable</span>(i_data);</span><br><span class="line">      <span class="keyword">endproperty</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">`<span class="keyword">ifdef</span>	SKIDBUFFER</span></span><br><span class="line">      <span class="keyword">assume</span>	<span class="keyword">property</span> (IDATA_HELD_WHEN_NOT_READY);</span><br><span class="line">    <span class="meta">`<span class="keyword">else</span></span></span><br><span class="line">      <span class="keyword">assert</span>	<span class="keyword">property</span> (IDATA_HELD_WHEN_NOT_READY);</span><br><span class="line">    <span class="meta">`<span class="keyword">endif</span></span></span><br><span class="line">        </span><br><span class="line"><span class="meta">`<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h3 id="4-Outgoing-Properties-299-312"><a href="#4-Outgoing-Properties-299-312" class="headerlink" title="4. Outgoing Properties(299-312)"></a>4. Outgoing Properties(299-312)</h3><p>过于简单不做讲解，详情请参考6.3.3小节。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">generate</span> <span class="keyword">if</span> (!OPT_PASSTHROUGH)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	<span class="keyword">if</span> (!f_past_valid) <span class="comment">// || $past(i_reset))</span></span><br><span class="line">	<span class="keyword">begin</span></span><br><span class="line">		<span class="comment">// Following any reset, valid must be deasserted</span></span><br><span class="line">		<span class="keyword">assert</span>(!o_valid || !OPT_INITIAL);</span><br><span class="line">	<span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">$past</span>(o_valid &amp;&amp; !i_ready &amp;&amp; !i_reset) &amp;&amp; !i_reset)</span><br><span class="line">		<span class="comment">// Following any stall, valid must remain high and</span></span><br><span class="line">		<span class="comment">// data must be preserved</span></span><br><span class="line">		<span class="keyword">assert</span>(o_valid &amp;&amp; <span class="built_in">$stable</span>(o_data));</span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">endgenerate</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>在这里提一下 systemverilog 中这类型的 <code>generate if</code> 语句条件生成结构</p>
+<p><code>generate if</code> 语句的语法如下：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">generate</span></span><br><span class="line">    <span class="keyword">if</span> (condition)</span><br><span class="line">        <span class="comment">// module items</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="comment">// module items</span></span><br><span class="line"><span class="keyword">endgenerate</span></span><br></pre></td></tr></table></figure>
+
+<p>其中，<code>condition</code> 是一个常量表达式，它在模块实例化时求值。如果 <code>condition</code> 为真，则 <code>if</code> 块中的模块项将被实例化；否则，<code>else</code> 块中的模块项将被实例化。需要注意的是，<code>generate-endgenerate</code> 关键字是可选的。</p>
+<p>例子：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> conditional_generate #(</span><br><span class="line">    <span class="keyword">parameter</span> OPERATION_TYPE = <span class="number">0</span></span><br><span class="line">) (</span><br><span class="line">    <span class="keyword">input</span> <span class="keyword">logic</span> [<span class="number">31</span>:<span class="number">0</span>] a,</span><br><span class="line">    <span class="keyword">input</span> <span class="keyword">logic</span> [<span class="number">31</span>:<span class="number">0</span>] b,</span><br><span class="line">    <span class="keyword">output</span> <span class="keyword">logic</span> [<span class="number">63</span>:<span class="number">0</span>] z</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (OPERATION_TYPE == <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">assign</span> z = a + b;</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (OPERATION_TYPE == <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">assign</span> z = a - b;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="keyword">assign</span> z = a * b;</span><br><span class="line"></span><br><span class="line"><span class="keyword">endmodule</span>: conditional_generate</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="5-Other-Properties"><a href="#5-Other-Properties" class="headerlink" title="5. Other Properties"></a>5. Other Properties</h3><h4 id="Rule1"><a href="#Rule1" class="headerlink" title="#Rule1"></a>#Rule1</h4><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// Other properties</span></span><br><span class="line"><span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="keyword">generate</span> <span class="keyword">if</span> (!OPT_PASSTHROUGH)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">   <span class="comment">// Rule #1:</span></span><br><span class="line">	<span class="comment">//	If registered, then following any reset we should be</span></span><br><span class="line">	<span class="comment">//	ready for a new request</span></span><br><span class="line">	<span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line">	<span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	<span class="keyword">if</span> (f_past_valid &amp;&amp; <span class="built_in">$past</span>(OPT_OUTREG &amp;&amp; i_reset))</span><br><span class="line">		<span class="keyword">assert</span>(o_ready);</span><br><span class="line">	<span class="comment">// &#125;&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>OPT_OUTREG == 1</code> ，表示例化类型时 <code>registered</code>。</li>
+<li><code>$past(OPT_OUTREG &amp;&amp; i_reset)</code> ， 复位两周期以后，o_ready 必须拉高，保持接受数据状态；</li>
+</ul>
+<h4 id="Rule2"><a href="#Rule2" class="headerlink" title="#Rule2"></a>#Rule2</h4><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">		<span class="comment">// Rule #2:</span></span><br><span class="line">		<span class="comment">//	All incoming data must either go directly to the</span></span><br><span class="line">		<span class="comment">//	output port, or into the skid buffer</span></span><br><span class="line">		<span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line"><span class="meta">`<span class="keyword">ifndef</span>	VERIFIC</span></span><br><span class="line">		<span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">		<span class="keyword">if</span> (f_past_valid &amp;&amp; !<span class="built_in">$past</span>(i_reset) &amp;&amp; <span class="built_in">$past</span>(i_valid &amp;&amp; o_ready</span><br><span class="line">			&amp;&amp; (!OPT_OUTREG || o_valid) &amp;&amp; !i_ready))</span><br><span class="line">			<span class="keyword">assert</span>(!o_ready &amp;&amp; w_data == <span class="built_in">$past</span>(i_data));</span><br><span class="line"><span class="meta">`<span class="keyword">else</span></span></span><br><span class="line">		<span class="keyword">assert</span> <span class="keyword">property</span> (@(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">			<span class="keyword">disable</span> <span class="keyword">iff</span> (i_reset)</span><br><span class="line">			(i_valid &amp;&amp; o_ready</span><br><span class="line">				&amp;&amp; (!OPT_OUTREG || o_valid) &amp;&amp; !i_ready)</span><br><span class="line">				|=&gt; (!o_ready &amp;&amp; w_data == <span class="built_in">$past</span>(i_data)));</span><br><span class="line"><span class="meta">`<span class="keyword">endif</span></span></span><br><span class="line">		<span class="comment">// &#125;&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><h2 id="if-not-define-VERIFIC：-condition：-f-past-valid-：-复位状态；-past-i-reset-：复位前后一段的两个周期；"><a href="#if-not-define-VERIFIC：-condition：-f-past-valid-：-复位状态；-past-i-reset-：复位前后一段的两个周期；" class="headerlink" title="if not define VERIFIC：- condition：  - f_past_valid ： 复位状态；  - !$past(i_reset) ：复位前后一段的两个周期；"></a><code>if not define VERIFIC</code>：<br>- condition：<br>  - <code>f_past_valid</code> ： 复位状态；<br>  - <code>!$past(i_reset)</code> ：复位前后一段的两个周期；</h2><ul>
+<li>check：</li>
+</ul>
+</li>
+<li></li>
+</ul>
+<h4 id="Rule3"><a href="#Rule3" class="headerlink" title="#Rule3"></a>#Rule3</h4><p>该段 unregister 的暂时不看；</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Rule #3:</span></span><br><span class="line"><span class="comment">//	After the last transaction, o_valid should become idle</span></span><br><span class="line"><span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line"><span class="keyword">if</span> (!OPT_OUTREG)</span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">	<span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line">	<span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">	<span class="keyword">if</span> (f_past_valid &amp;&amp; !<span class="built_in">$past</span>(i_reset) &amp;&amp; !i_reset</span><br><span class="line">			&amp;&amp; <span class="built_in">$past</span>(i_ready))</span><br><span class="line">	<span class="keyword">begin</span></span><br><span class="line">		<span class="keyword">assert</span>(o_valid == i_valid);</span><br><span class="line">		<span class="keyword">assert</span>(!i_valid || (o_data == i_data));</span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line">	<span class="comment">// &#125;&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>重点关注 register 的 skidbuffer</p>
+<ul>
+<li><code>(f_past_valid &amp;&amp; !$past(i_reset))</code> ：上一周期的  i_reset &#x3D;&#x3D;0 ，在上一周期发生了复位处理；</li>
+<li></li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">begin</span></span><br><span class="line">		<span class="comment">// &#123;&#123;&#123;</span></span><br><span class="line">		<span class="keyword">always</span> @(<span class="keyword">posedge</span> i_clk)</span><br><span class="line">		<span class="keyword">if</span> (f_past_valid &amp;&amp; !<span class="built_in">$past</span>(i_reset))</span><br><span class="line">		<span class="keyword">begin</span></span><br><span class="line">			<span class="keyword">if</span> (<span class="built_in">$past</span>(i_valid &amp;&amp; o_ready))</span><br><span class="line">				<span class="keyword">assert</span>(o_valid);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (<span class="built_in">$past</span>(!i_valid &amp;&amp; o_ready &amp;&amp; i_ready))</span><br><span class="line">				<span class="keyword">assert</span>(!o_valid);</span><br><span class="line">		<span class="keyword">end</span></span><br><span class="line">		<span class="comment">// &#125;&#125;&#125;</span></span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line">	<span class="comment">// &#125;&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1 id="zzz-Pipeline-Skid-Buffer"><a href="#zzz-Pipeline-Skid-Buffer" class="headerlink" title="zzz. Pipeline Skid Buffer"></a>zzz. <a target="_blank" rel="noopener" href="http://fpgacpu.ca/fpga/Pipeline_Skid_Buffer.html">Pipeline Skid Buffer</a></h1><p><strong>想象一个小模块</strong>：To begin designing a skid buffer, let’s imagine a single unit which can perform a <em>valid&#x2F;ready handshake</em> and <em>receive an input item of data</em>, then <em>performs the same handshake</em> with the other end to output the data.</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Input                       Output</span><br><span class="line">-----                       ------</span><br><span class="line">          -------------</span><br><span class="line">ready &lt;--|             |&lt;-- ready</span><br><span class="line">valid --&gt;| Skid Buffer |--&gt; valid</span><br><span class="line">data  --&gt;|             |--&gt; data</span><br><span class="line">          -------------</span><br></pre></td></tr></table></figure>
+
+<p>​	<strong>理想情况下</strong>，输入和输出接口同时操作以获得最大带宽:<strong>在同一时钟周期内，输入接口接收到一个新的数据项并将其放入寄存器，输出接口同时读出同一个寄存器</strong>（相当于一个直接的组合逻辑连接方式）。但是，如果输出接口在给定周期内没有传输数据（<strong>还在处理，不能及时读入新的数据</strong>），则输入接口也不能在该周期内传输数据，否则我们将在读取数据寄存器之前覆盖数据寄存器。</p>
+<p>​	为了避免这个问题，输入接口应该在同一个周期内，与输出接口一起声明自己未准备好。但这在它们之间形成了直接的组合连接，而不是管道连接。如果我们可以直接连接两个接口，并且不影响计时或并发性，那么我们就不需要流水线了!</p>
+<p>为了解决这个矛盾，我们需要一个额外的缓冲寄存器来捕获时钟周期内的传入数据，其中输入接口正在传输数据，但输出接口没有，并且主寄存器中已经有数据。然后，在下一个周期中，输入接口可以发出它不再准备好的信号，并且没有数据丢失。我们可以想象这个额外的缓冲寄存器允许输入接口“滑”到停止，而不是立即停止，这与我们之前发现的流水线要求相矛盾。</p>
+<h2 id="3-1-Circular-Buffer-Mode"><a href="#3-1-Circular-Buffer-Mode" class="headerlink" title="3.1 Circular Buffer Mode"></a>3.1 Circular Buffer Mode</h2><p>Setting <code>CIRCULAR_BUFFER</code> parameter to a non-zero value changes the behaviour at the input: the input handshake can always complete, discarding the earlier data already at the buffer output even if it is never read out and replacing it with the next previously buffered value. You can think of this as buffering the <em>latest</em> values from the pipeline. This is a two-entry circular buffer.</p>
+<p>Contrary to normal operation, simultaneous input and ouput handshakes are possible on a full Skid Buffer in Circular Buffer Mode, giving full throughput with 2 cycles of latency. This is possible since <code>input_ready</code> no longer depends on the empty&#x2F;full state of the buffer (which forces alternation of input and output handshakes), nor on the state of the output handshake (which is disallowed to prevent creating a combinational path between input and output).</p>
+<p>代码部分：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">default_nettype</span> none</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">module</span> Pipeline_Skid_Buffer</span><br><span class="line">#(</span><br><span class="line">    <span class="keyword">parameter</span> WORD_WIDTH                = <span class="number">0</span>,</span><br><span class="line">    <span class="keyword">parameter</span> CIRCULAR_BUFFER           = <span class="number">0</span>     <span class="comment">// non-zero to enable</span></span><br><span class="line">)</span><br><span class="line">(</span><br><span class="line">    <span class="keyword">input</span>   <span class="keyword">wire</span>                        clock,</span><br><span class="line">    <span class="keyword">input</span>   <span class="keyword">wire</span>                        clear,</span><br><span class="line"></span><br><span class="line">    <span class="keyword">input</span>   <span class="keyword">wire</span>                        input_valid,</span><br><span class="line">    <span class="keyword">output</span>  <span class="keyword">wire</span>                        input_ready,</span><br><span class="line">    <span class="keyword">input</span>   <span class="keyword">wire</span>    [WORD_WIDTH-<span class="number">1</span>:<span class="number">0</span>]    input_data,</span><br><span class="line"></span><br><span class="line">    <span class="keyword">output</span>  <span class="keyword">wire</span>                        output_valid,</span><br><span class="line">    <span class="keyword">input</span>   <span class="keyword">wire</span>                        output_ready,</span><br><span class="line">    <span class="keyword">output</span>  <span class="keyword">wire</span>    [WORD_WIDTH-<span class="number">1</span>:<span class="number">0</span>]    output_data</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">localparam</span> WORD_ZERO = &#123;WORD_WIDTH&#123;<span class="number">1&#x27;b0</span>&#125;&#125;;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="3-2-Data-Path"><a href="#3-2-Data-Path" class="headerlink" title="3.2 Data Path"></a>3.2 Data Path</h2><p>行为逻辑阐述：</p>
+<p>代码实现：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">reg</span>                     data_buffer_wren = <span class="number">1&#x27;b0</span>; <span class="comment">// EMPTY at start, so don&#x27;t load.</span></span><br><span class="line"><span class="keyword">wire</span> [WORD_WIDTH-<span class="number">1</span>:<span class="number">0</span>]   data_buffer_out;</span><br><span class="line"></span><br><span class="line">Register</span><br><span class="line">#(</span><br><span class="line">    <span class="variable">.WORD_WIDTH</span>     (WORD_WIDTH),</span><br><span class="line">    <span class="variable">.RESET_VALUE</span>    (WORD_ZERO)</span><br><span class="line">)data_buffer_reg</span><br><span class="line">(</span><br><span class="line">    <span class="variable">.clock</span>          (clock),</span><br><span class="line">    <span class="variable">.clock_enable</span>   (data_buffer_wren),</span><br><span class="line">    <span class="variable">.clear</span>          (clear),</span><br><span class="line">    <span class="variable">.data_in</span>        (input_data),</span><br><span class="line">    <span class="variable">.data_out</span>       (data_buffer_out)</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">reg</span>                     data_out_wren       = <span class="number">1&#x27;b1</span>; <span class="comment">// EMPTY at start, so accept data.</span></span><br><span class="line"><span class="keyword">reg</span>                     use_buffered_data   = <span class="number">1&#x27;b0</span>;</span><br><span class="line"><span class="keyword">reg</span> [WORD_WIDTH-<span class="number">1</span>:<span class="number">0</span>]    selected_data       = WORD_ZERO;</span><br><span class="line"></span><br><span class="line"><span class="keyword">always</span> @(*) <span class="keyword">begin</span></span><br><span class="line">    selected_data = (use_buffered_data == <span class="number">1&#x27;b1</span>) ? data_buffer_out : input_data;</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">Register</span><br><span class="line">#(</span><br><span class="line">    <span class="variable">.WORD_WIDTH</span>     (WORD_WIDTH),</span><br><span class="line">    <span class="variable">.RESET_VALUE</span>    (WORD_ZERO)</span><br><span class="line">)data_out_reg</span><br><span class="line">(</span><br><span class="line">    <span class="variable">.clock</span>          (clock),</span><br><span class="line">    <span class="variable">.clock_enable</span>   (data_out_wren),</span><br><span class="line">    <span class="variable">.clear</span>          (clear),</span><br><span class="line">    <span class="variable">.data_in</span>        (selected_data),</span><br><span class="line">    <span class="variable">.data_out</span>       (output_data)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="3-3-Control-Path"><a href="#3-3-Control-Path" class="headerlink" title="3.3 Control Path"></a>3.3 Control Path</h2><blockquote>
+<p>This FSM assumes the usual meaning and behaviour of valid&#x2F;ready handshake signals: when both are high, data transfers at the end of the clock cycle. It is an error to raise ready when not able to accept data (thus losing the incoming data), or to raise valid when not able to send data (thus duplicating previously sent data). <em>These error situations are not handled.</em></p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">冰蒂斯</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2024/01/07/skid-buffer/">http://example.com/2024/01/07/skid-buffer/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">冰蒂斯のformula</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="/img/chainsaw_power01.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/01/06/how2blog/" title="how2blog"><img class="cover" src="/img/reze.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">how2blog</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">冰蒂斯</div><div class="author-info__description">螺旋上升的人生,也是多线程的人生</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#0-%E8%B5%84%E6%96%99"><span class="toc-number">1.</span> <span class="toc-text">0.资料</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E6%8F%A1%E6%89%8B%E5%92%8C%E5%8F%8D%E5%8E%8B-%E6%8F%A1%E6%89%8B%E9%97%AE%E9%A2%98"><span class="toc-number">2.</span> <span class="toc-text">1. 握手和反压&#x3D;&#x3D;(握手问题)&#x3D;&#x3D;</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-Strategies-for-pipelining-logic"><span class="toc-number">3.</span> <span class="toc-text">2. Strategies for pipelining logic</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-The-global-valid-%E9%9D%9E%E9%87%8D%E7%82%B9"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 The global valid(非重点)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-The-traveling-CE-%E9%9D%9E%E9%87%8D%E7%82%B9"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 The traveling CE(非重点)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-handshake-%E7%95%A5"><span class="toc-number">3.3.</span> <span class="toc-text">2.3 handshake(略)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-The-buffered-handshake"><span class="toc-number">3.4.</span> <span class="toc-text">2.4  The buffered handshake</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Data-Flow"><span class="toc-number">3.4.1.</span> <span class="toc-text">1. Data Flow</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Difference-Rules"><span class="toc-number">3.4.2.</span> <span class="toc-text">2. Difference &amp; Rules</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-behavior-design%EF%BC%88-%E4%BC%AA-%EF%BC%89"><span class="toc-number">3.4.3.</span> <span class="toc-text">3. behavior design（&#x3D;&#x3D;伪&#x3D;&#x3D;）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-reset"><span class="toc-number">3.4.3.1.</span> <span class="toc-text">3.1 reset</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-normal"><span class="toc-number">3.4.3.2.</span> <span class="toc-text">3.2 normal</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-o-stb-0-i-busy-1"><span class="toc-number">3.4.3.3.</span> <span class="toc-text">3.3   o_stb &#x3D;&#x3D;0  &amp;  i_busy &#x3D;&#x3D; 1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-o-stb-1-i-busy-1"><span class="toc-number">3.4.3.4.</span> <span class="toc-text">3.4  o_stb &#x3D;&#x3D;1 &amp; i_busy &#x3D;&#x3D;1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-5-deal-with-r-data"><span class="toc-number">3.4.3.5.</span> <span class="toc-text">3.5  deal with r_data</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Bugs"><span class="toc-number">3.4.4.</span> <span class="toc-text">4. Bugs</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-The-basic-concept-of-the-skid-buffer"><span class="toc-number">4.</span> <span class="toc-text">3. The basic concept of the skid buffer</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-0-Rules-of-Handshake-%E4%BD%93%E7%8E%B0"><span class="toc-number">4.1.</span> <span class="toc-text">3.0 Rules of Handshake(体现)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E7%BB%8F%E5%85%B8%E4%B8%89%E7%8A%B6%E6%80%81"><span class="toc-number">4.2.</span> <span class="toc-text">3.1 经典三状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-Optional-Enhancements"><span class="toc-number">4.3.</span> <span class="toc-text">3.2 Optional Enhancements</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-Internal-Signal%EF%BC%88-%E4%BC%AA%E5%86%85%E9%83%A8%E9%80%BB%E8%BE%91-%EF%BC%89"><span class="toc-number">4.4.</span> <span class="toc-text">3.3 Internal Signal（&#x3D;&#x3D;伪内部逻辑&#x3D;&#x3D;）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-1-r-valid-%E4%BF%A1%E5%8F%B7"><span class="toc-number">4.4.1.</span> <span class="toc-text">3.3.1  r_valid 信号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-2-r-data-%E4%BF%A1%E5%8F%B7"><span class="toc-number">4.4.2.</span> <span class="toc-text">3.3.2  r_data 信号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-3-%E4%BD%8E%E5%8A%9F%E8%80%97"><span class="toc-number">4.4.3.</span> <span class="toc-text">3.3.3 低功耗</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-%E4%BF%A1%E5%8F%B7%E7%AD%89%E4%BB%B7-in-skidbuffer"><span class="toc-number">4.5.</span> <span class="toc-text">3.4 信号等价 in skidbuffer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-5-register-unregistered-buffer"><span class="toc-number">4.6.</span> <span class="toc-text">3.5 &#x3D;&#x3D;register | unregistered buffer&#x3D;&#x3D;</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-unregistered-case-%E5%B7%A6R%E5%8F%B3C"><span class="toc-number">4.6.1.</span> <span class="toc-text">1.  unregistered case :左R右C</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-registered-case-%EF%BC%9A"><span class="toc-number">4.6.2.</span> <span class="toc-text">2. registered case ：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-Formal-Verification"><span class="toc-number">5.</span> <span class="toc-text">4.  Formal Verification</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-reset"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 reset</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-xVALID-xREADY"><span class="toc-number">5.2.</span> <span class="toc-text">4.2   !xVALID || xREADY</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-internal-and-output-signals"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 internal and output signals</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Rule1"><span class="toc-number">5.3.1.</span> <span class="toc-text">1. #Rule1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Rule2"><span class="toc-number">5.3.2.</span> <span class="toc-text">2. #Rule2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Rule3"><span class="toc-number">5.3.3.</span> <span class="toc-text">3. #Rule3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Rule4"><span class="toc-number">5.3.4.</span> <span class="toc-text">4. #Rule4</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-Cover-SVA"><span class="toc-number">6.</span> <span class="toc-text">5. Cover (SVA)</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-skidbuffer-example-1"><span class="toc-number">6.1.</span> <span class="toc-text">5.1 skidbuffer example_1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-%E8%BF%BD%E8%B8%AA%E4%BF%A1%E5%8F%B7"><span class="toc-number">6.2.</span> <span class="toc-text">5.2 追踪信号</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#6-skidbuffer-%E4%BB%A3%E7%A0%81%E8%A7%A3%E8%AF%BB"><span class="toc-number">7.</span> <span class="toc-text">6. skidbuffer_代码解读</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-1-%E7%9B%AE%E7%9A%84%E5%92%8C%E5%8F%82%E6%95%B0%E4%BB%8B%E7%BB%8D"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 目的和参数介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-2-Code-Design"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 Code Design</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-1-r-valid"><span class="toc-number">7.2.1.</span> <span class="toc-text">6.2.1  r_valid</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-2-r-data"><span class="toc-number">7.2.2.</span> <span class="toc-text">6.2.2 r_data</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-3-o-ready"><span class="toc-number">7.2.3.</span> <span class="toc-text">6.2.3 o_ready</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-4-net-output"><span class="toc-number">7.2.4.</span> <span class="toc-text">6.2.4 net_output</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#o-valid-%E6%9C%89%E6%95%88%E4%BF%A1%E5%8F%B7%E6%8E%A7%E5%88%B6%EF%BC%9A"><span class="toc-number">7.2.4.1.</span> <span class="toc-text">o_valid 有效信号控制：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#o-data-%E6%95%B0%E6%8D%AE%E7%9A%84%E6%8E%A7%E5%88%B6%EF%BC%9A"><span class="toc-number">7.2.4.2.</span> <span class="toc-text">o_data 数据的控制：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-5-reg-output"><span class="toc-number">7.2.5.</span> <span class="toc-text">6.2.5 reg_output</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#o-valid-%E6%9C%89%E6%95%88%E4%BF%A1%E5%8F%B7%E6%8E%A7%E5%88%B6%EF%BC%9A-1"><span class="toc-number">7.2.5.1.</span> <span class="toc-text">o_valid 有效信号控制：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#o-data-%E6%95%B0%E6%8D%AE%E7%9A%84%E6%8E%A7%E5%88%B6%EF%BC%9A-1"><span class="toc-number">7.2.5.2.</span> <span class="toc-text">o_data 数据的控制：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-3-Formal-properties%EF%BC%88%E4%B8%80%E4%BA%9B%E6%80%A7%E8%B4%A8%EF%BC%89"><span class="toc-number">7.3.</span> <span class="toc-text">6.3 Formal properties（一些性质）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-assume-or-assert"><span class="toc-number">7.3.1.</span> <span class="toc-text">1. assume or assert</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-check-reset"><span class="toc-number">7.3.2.</span> <span class="toc-text">2. check reset</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Incoming-Properties-266-290"><span class="toc-number">7.3.3.</span> <span class="toc-text">3. Incoming Properties(266-290)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%A4%8D%E4%BD%8D%E5%89%8D-%E4%B8%8D%E5%A4%8D%E4%BD%8D"><span class="toc-number">7.3.3.1.</span> <span class="toc-text">1. 复位前 &amp; 不复位</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-input-reset-%E8%BF%87%E7%A8%8B"><span class="toc-number">7.3.3.2.</span> <span class="toc-text">2. input reset 过程</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Outgoing-Properties-299-312"><span class="toc-number">7.3.4.</span> <span class="toc-text">4. Outgoing Properties(299-312)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-Other-Properties"><span class="toc-number">7.3.5.</span> <span class="toc-text">5. Other Properties</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Rule1"><span class="toc-number">7.3.5.1.</span> <span class="toc-text">#Rule1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Rule2"><span class="toc-number">7.3.5.2.</span> <span class="toc-text">#Rule2</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#if-not-define-VERIFIC%EF%BC%9A-condition%EF%BC%9A-f-past-valid-%EF%BC%9A-%E5%A4%8D%E4%BD%8D%E7%8A%B6%E6%80%81%EF%BC%9B-past-i-reset-%EF%BC%9A%E5%A4%8D%E4%BD%8D%E5%89%8D%E5%90%8E%E4%B8%80%E6%AE%B5%E7%9A%84%E4%B8%A4%E4%B8%AA%E5%91%A8%E6%9C%9F%EF%BC%9B"><span class="toc-number">7.4.</span> <span class="toc-text">if not define VERIFIC：- condition：  - f_past_valid ： 复位状态；  - !$past(i_reset) ：复位前后一段的两个周期；</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Rule3"><span class="toc-number">7.4.0.1.</span> <span class="toc-text">#Rule3</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#zzz-Pipeline-Skid-Buffer"><span class="toc-number">8.</span> <span class="toc-text">zzz. Pipeline Skid Buffer</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-Circular-Buffer-Mode"><span class="toc-number">8.1.</span> <span class="toc-text">3.1 Circular Buffer Mode</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-Data-Path"><span class="toc-number">8.2.</span> <span class="toc-text">3.2 Data Path</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-Control-Path"><span class="toc-number">8.3.</span> <span class="toc-text">3.3 Control Path</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/01/07/skid-buffer/" title="skid_buffer"><img src="/img/chainsaw_power01.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="skid_buffer"/></a><div class="content"><a class="title" href="/2024/01/07/skid-buffer/" title="skid_buffer">skid_buffer</a><time datetime="2024-01-07T12:48:03.000Z" title="发表于 2024-01-07 20:48:03">2024-01-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/01/06/how2blog/" title="how2blog"><img src="/img/reze.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="how2blog"/></a><div class="content"><a class="title" href="/2024/01/06/how2blog/" title="how2blog">how2blog</a><time datetime="2024-01-06T14:34:23.000Z" title="发表于 2024-01-06 22:34:23">2024-01-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/27/S2MM/" title="S2MM"><img src="/img/chainsaw_red.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="S2MM"/></a><div class="content"><a class="title" href="/2023/12/27/S2MM/" title="S2MM">S2MM</a><time datetime="2023-12-27T05:57:36.000Z" title="发表于 2023-12-27 13:57:36">2023-12-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/24/auto2-using/" title="auto2-using"><img src="/img/chainsaw_makima04.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="auto2-using"/></a><div class="content"><a class="title" href="/2023/12/24/auto2-using/" title="auto2-using">auto2-using</a><time datetime="2023-12-24T14:17:24.000Z" title="发表于 2023-12-24 22:17:24">2023-12-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/12/auto1-introduction/" title="auto1_introduction"><img src="/img/flower.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="auto1_introduction"/></a><div class="content"><a class="title" href="/2023/12/12/auto1-introduction/" title="auto1_introduction">auto1_introduction</a><time datetime="2023-12-12T06:18:40.000Z" title="发表于 2023-12-12 14:18:40">2023-12-12</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By 冰蒂斯</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
